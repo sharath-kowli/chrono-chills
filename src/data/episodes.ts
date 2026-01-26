@@ -23,9 +23,9 @@ import episode2Thumb from '@/assets/episode-2-it-moved.jpg';
 import episode3Thumb from '@/assets/episode-3-static.jpg';
 
 export const series: Series = {
-  id: 'static-season-1',
-  title: 'STATIC',
-  tagline: 'Some signals were never meant to be received.',
+  id: 'still-here-season-1',
+  title: 'STILL HERE',
+  tagline: 'Some things never leave.',
   episodes: [
     {
       id: 'ep-1',
@@ -34,7 +34,7 @@ export const series: Series = {
       subtitle: 'It started with footsteps.',
       duration: '0:38',
       thumbnail: episode1Thumb,
-      youtubeId: 'dQw4w9WgXcQ', // Replace with your actual unlisted YouTube video ID
+      youtubeId: 'zRs5wtVEwII',
       isNew: true,
     },
     {
