@@ -55,8 +55,8 @@ const Watch = () => {
       </header>
       
       {/* Video player */}
-      <div className="relative pt-16">
-        <div className="vhs-lines aspect-video w-full bg-background">
+      <div className="relative flex justify-center pt-16">
+        <div className="vhs-lines aspect-[9/16] w-full max-w-md bg-background">
           <iframe
             src={`https://www.youtube.com/embed/${episode.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
             title={episode.title}
@@ -126,7 +126,7 @@ const Watch = () => {
               to={`/watch/${nextEpisode.id}`}
               className="episode-card group flex gap-4 p-4"
             >
-              <div className="relative aspect-video w-40 shrink-0 overflow-hidden rounded">
+              <div className="relative aspect-[9/16] w-24 shrink-0 overflow-hidden rounded">
                 <img
                   src={nextEpisode.thumbnail}
                   alt={nextEpisode.title}

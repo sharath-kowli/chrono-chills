@@ -14,7 +14,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
       className="episode-card group block"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="relative aspect-video overflow-hidden">
+      <div className="relative aspect-[9/16] overflow-hidden">
         {/* Thumbnail */}
         <img
           src={episode.thumbnail}
