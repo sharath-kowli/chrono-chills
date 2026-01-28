@@ -44,7 +44,7 @@ export const series: Series = {
       subtitle: 'The corner of your eye never lies.',
       duration: '0:32',
       thumbnail: episode2Thumb,
-      youtubeId: 'dQw4w9WgXcQ', // Replace with your actual unlisted YouTube video ID
+      youtubeId: '0DXmaV2qB2k',
     },
     {
       id: 'ep-3',
