@@ -1,18 +1,115 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { series } from '@/data/episodes';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 
 const Watch = () => {
   const { episodeId } = useParams<{ episodeId: string }>();
   const navigate = useNavigate();
+  const playerRef = useRef<any>(null);
+  const [showNextPrompt, setShowNextPrompt] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   
   const currentIndex = series.episodes.findIndex(ep => ep.id === episodeId);
   const episode = series.episodes[currentIndex];
   
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
+
+  const goToNextEpisode = useCallback(() => {
+    if (nextEpisode) {
+      navigate(`/watch/${nextEpisode.id}`);
+    }
+  }, [nextEpisode, navigate]);
+
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+  }, []);
+
+  // Initialize player when API is ready
+  useEffect(() => {
+    if (!episode) return;
+
+    const initPlayer = () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+      
+      playerRef.current = new window.YT.Player('youtube-player', {
+        videoId: episode.youtubeId,
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1,
+        },
+        events: {
+          onStateChange: (event: any) => {
+            // Video ended (state = 0)
+            if (event.data === 0 && nextEpisode) {
+              console.log('Analytics: episode_completed', {
+                episodeId: episode.id,
+                episodeNumber: episode.number,
+                title: episode.title,
+                timestamp: new Date().toISOString(),
+              });
+              setShowNextPrompt(true);
+              setCountdown(5);
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+  }, [episode, nextEpisode]);
+
+  // Reset state when episode changes
+  useEffect(() => {
+    setShowNextPrompt(false);
+    setCountdown(5);
+  }, [episodeId]);
+
+  // Countdown timer for auto-play
+  useEffect(() => {
+    if (!showNextPrompt || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          goToNextEpisode();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showNextPrompt, countdown, goToNextEpisode]);
   
   // Track episode view (placeholder for analytics)
   useEffect(() => {
@@ -56,14 +153,49 @@ const Watch = () => {
       
       {/* Video player */}
       <div className="relative flex justify-center pt-16">
-        <div className="vhs-lines aspect-[9/16] w-full max-w-md bg-background">
-          <iframe
-            src={`https://www.youtube.com/embed/${episode.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-            title={episode.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-          />
+        <div className="vhs-lines relative aspect-[9/16] w-full max-w-md bg-background">
+          <div id="youtube-player" className="h-full w-full" />
+          
+          {/* Next Episode Prompt Overlay */}
+          {showNextPrompt && nextEpisode && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
+              <div className="p-6 text-center">
+                <p className="mb-2 text-sm text-muted-foreground">Up Next</p>
+                <h3 className="font-display text-2xl tracking-wide text-foreground">
+                  {nextEpisode.title}
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
+                
+                {/* Thumbnail preview */}
+                <div className="mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
+                  <img 
+                    src={nextEpisode.thumbnail} 
+                    alt={nextEpisode.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                
+                <Button
+                  onClick={goToNextEpisode}
+                  className="mt-6 gap-2 bg-primary px-8 py-6 text-lg hover:bg-primary/90"
+                >
+                  <Play className="h-5 w-5 fill-current" />
+                  Play Now
+                </Button>
+                
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Starting in {countdown}...
+                </p>
+                
+                <button
+                  onClick={() => setShowNextPrompt(false)}
+                  className="mt-4 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
