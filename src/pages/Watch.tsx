@@ -1,7 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Play, Lock } from 'lucide-react';
 import { series } from '@/data/episodes';
 import { Button } from '@/components/ui/button';
+import { PaywallModal } from '@/components/PaywallModal';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 declare global {
@@ -16,19 +17,34 @@ const Watch = () => {
   const navigate = useNavigate();
   const playerRef = useRef<any>(null);
   const [showNextPrompt, setShowNextPrompt] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
   
   const currentIndex = series.episodes.findIndex(ep => ep.id === episodeId);
   const episode = series.episodes[currentIndex];
   
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
+  
+  // Check if next episode is locked (Episode 3)
+  const isNextEpisodeLocked = nextEpisode?.id === 'ep-3';
 
   const goToNextEpisode = useCallback(() => {
-    if (nextEpisode) {
+    if (!nextEpisode) return;
+    
+    if (isNextEpisodeLocked) {
+      // Stop countdown and show paywall
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      setShowNextPrompt(false);
+      setShowPaywall(true);
+    } else {
       navigate(`/watch/${nextEpisode.id}`);
     }
-  }, [nextEpisode, navigate]);
+  }, [nextEpisode, navigate, isNextEpisodeLocked]);
 
   // Load YouTube IFrame API
   useEffect(() => {
@@ -91,25 +107,40 @@ const Watch = () => {
   // Reset state when episode changes
   useEffect(() => {
     setShowNextPrompt(false);
+    setShowPaywall(false);
     setCountdown(5);
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
   }, [episodeId]);
 
   // Countdown timer for auto-play
   useEffect(() => {
-    if (!showNextPrompt || countdown <= 0) return;
+    if (!showNextPrompt) return;
 
-    const timer = setInterval(() => {
+    countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          goToNextEpisode();
+          if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+          }
+          // Use setTimeout to avoid setState during render
+          setTimeout(() => goToNextEpisode(), 0);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [showNextPrompt, countdown, goToNextEpisode]);
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    };
+  }, [showNextPrompt, goToNextEpisode]);
   
   // Track episode view (placeholder for analytics)
   useEffect(() => {
@@ -167,24 +198,38 @@ const Watch = () => {
                 <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
                 
                 {/* Thumbnail preview */}
-                <div className="mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
+                <div className="relative mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
                   <img 
                     src={nextEpisode.thumbnail} 
                     alt={nextEpisode.title}
                     className="h-full w-full object-cover"
                   />
+                  {isNextEpisodeLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+                      <Lock className="h-6 w-6 text-primary" />
+                    </div>
+                  )}
                 </div>
                 
                 <Button
                   onClick={goToNextEpisode}
                   className="mt-6 gap-2 bg-primary px-8 py-6 text-lg hover:bg-primary/90"
                 >
-                  <Play className="h-5 w-5 fill-current" />
-                  Play Now
+                  {isNextEpisodeLocked ? (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      Unlock Episode
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-5 w-5 fill-current" />
+                      Play Now
+                    </>
+                  )}
                 </Button>
                 
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Starting in {countdown}...
+                  {isNextEpisodeLocked ? 'Premium content' : `Starting in ${countdown}...`}
                 </p>
                 
                 <button
@@ -235,11 +280,26 @@ const Watch = () => {
           
           {nextEpisode ? (
             <Button
-              onClick={() => navigate(`/watch/${nextEpisode.id}`)}
+              onClick={() => {
+                if (isNextEpisodeLocked) {
+                  setShowPaywall(true);
+                } else {
+                  navigate(`/watch/${nextEpisode.id}`);
+                }
+              }}
               className="flex items-center gap-2 bg-primary hover:bg-primary/90"
             >
-              <span>Next Episode</span>
-              <ChevronRight className="h-4 w-4" />
+              {isNextEpisodeLocked ? (
+                <>
+                  <Lock className="h-4 w-4" />
+                  <span>Unlock Episode 3</span>
+                </>
+              ) : (
+                <>
+                  <span>Next Episode</span>
+                  <ChevronRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           ) : (
             <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
@@ -254,9 +314,15 @@ const Watch = () => {
             <h2 className="mb-4 font-display text-xl tracking-wide text-foreground">
               Up Next
             </h2>
-            <Link
-              to={`/watch/${nextEpisode.id}`}
-              className="episode-card group flex gap-4 p-4"
+            <div
+              onClick={() => {
+                if (isNextEpisodeLocked) {
+                  setShowPaywall(true);
+                } else {
+                  navigate(`/watch/${nextEpisode.id}`);
+                }
+              }}
+              className="episode-card group flex cursor-pointer gap-4 p-4"
             >
               <div className="relative aspect-[9/16] w-24 shrink-0 overflow-hidden rounded">
                 <img
@@ -265,18 +331,35 @@ const Watch = () => {
                   className="h-full w-full object-cover"
                 />
                 <div className="vhs-lines absolute inset-0" />
+                {isNextEpisodeLocked && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+                    <Lock className="h-5 w-5 text-primary" />
+                  </div>
+                )}
               </div>
               <div className="flex flex-col justify-center">
-                <span className="text-sm text-primary">Episode {nextEpisode.number}</span>
+                <span className="text-sm text-primary">
+                  Episode {nextEpisode.number}
+                  {isNextEpisodeLocked && ' • Premium'}
+                </span>
                 <h3 className="font-display text-lg tracking-wide text-foreground group-hover:text-primary">
                   {nextEpisode.title}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
               </div>
-            </Link>
+            </div>
           </div>
         )}
       </div>
+      
+      {/* Paywall Modal */}
+      {nextEpisode && (
+        <PaywallModal
+          open={showPaywall}
+          onOpenChange={setShowPaywall}
+          episodeTitle={nextEpisode.title}
+        />
+      )}
     </div>
   );
 };
