@@ -111,6 +111,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
         open={showPaywall} 
         onOpenChange={setShowPaywall}
         episodeTitle={episode.title}
+        onUnlock={() => navigate(`/watch/${episode.id}`)}
       />
     </>
   );
