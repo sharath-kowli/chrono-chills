@@ -31,7 +31,7 @@ export const series: Series = {
     {
       id: 'ep-1',
       number: 1,
-      title: 'The Hallway',
+      title: "It's in the Eyes",
       subtitle: 'It started with footsteps.',
       duration: '0:38',
       thumbnail: episode1Thumb,
@@ -41,7 +41,7 @@ export const series: Series = {
     {
       id: 'ep-2',
       number: 2,
-      title: 'It Moved',
+      title: 'The Hallway',
       subtitle: 'The corner of your eye never lies.',
       duration: '0:32',
       thumbnail: episode2Thumb,
@@ -50,7 +50,7 @@ export const series: Series = {
     {
       id: 'ep-3',
       number: 3,
-      title: 'Static in the Walls',
+      title: 'The Hand',
       subtitle: 'They\'re listening through the wires.',
       duration: '0:41',
       thumbnail: episode3Thumb,
