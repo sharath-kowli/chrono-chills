@@ -4,6 +4,7 @@ import { series } from '@/data/episodes';
 import { Button } from '@/components/ui/button';
 import { PaywallModal } from '@/components/PaywallModal';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { isPremiumUnlocked } from '@/lib/unlock';
 
 declare global {
   interface Window {
@@ -27,8 +28,9 @@ const Watch = () => {
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
   
-  // Check if next episode is locked (Episodes 3 and 4)
-  const isNextEpisodeLocked = nextEpisode?.id === 'ep-3' || nextEpisode?.id === 'ep-4';
+  // Check if next episode is locked (Episodes 3 and 4), unless already unlocked
+  const isNextEpisodePremium = nextEpisode?.id === 'ep-3' || nextEpisode?.id === 'ep-4';
+  const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked();
 
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
