@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { unlockPremium } from '@/lib/unlock';
 
 interface PaywallModalProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     const code = redeemCode.trim().toUpperCase();
     if (VALID_CODES.includes(code)) {
       console.log('Valid code redeemed:', code);
+      unlockPremium(); // Persist unlock state for all premium episodes
       setRedeemError('');
       setRedeemCode('');
       setShowRedeemInput(false);

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import type { Episode } from '@/data/episodes';
 import { PaywallModal } from './PaywallModal';
+import { isPremiumUnlocked } from '@/lib/unlock';
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -13,8 +14,9 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   
-  // Episodes 3 and 4 require payment
-  const isLocked = episode.id === 'ep-3' || episode.id === 'ep-4';
+  // Episodes 3 and 4 require payment, unless already unlocked
+  const isPremiumEpisode = episode.id === 'ep-3' || episode.id === 'ep-4';
+  const isLocked = isPremiumEpisode && !isPremiumUnlocked();
   
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {
