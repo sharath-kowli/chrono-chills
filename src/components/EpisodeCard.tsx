@@ -13,8 +13,8 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   
-  // Episode 3 (ep-3) requires payment
-  const isLocked = episode.id === 'ep-3';
+  // Episodes 3 and 4 require payment
+  const isLocked = episode.id === 'ep-3' || episode.id === 'ep-4';
   
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {

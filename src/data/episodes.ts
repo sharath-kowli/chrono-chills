@@ -21,6 +21,7 @@ export interface Series {
 import episode1Thumb from '@/assets/episode-1-still-here.jpg';
 import episode2Thumb from '@/assets/episode-2-it-moved.jpg';
 import episode3Thumb from '@/assets/episode-3-static.jpg';
+import episode4Thumb from '@/assets/episode-4-behind-the-door.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -54,6 +55,15 @@ export const series: Series = {
       duration: '0:41',
       thumbnail: episode3Thumb,
       youtubeId: 'UEL9Y3wCH50',
+    },
+    {
+      id: 'ep-4',
+      number: 4,
+      title: 'Behind the Door',
+      subtitle: 'Some doors should stay closed.',
+      duration: '0:35',
+      thumbnail: episode4Thumb,
+      youtubeId: 'nhak1qzwHAw',
     },
   ],
 };

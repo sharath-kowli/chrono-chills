@@ -27,8 +27,8 @@ const Watch = () => {
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
   
-  // Check if next episode is locked (Episode 3)
-  const isNextEpisodeLocked = nextEpisode?.id === 'ep-3';
+  // Check if next episode is locked (Episodes 3 and 4)
+  const isNextEpisodeLocked = nextEpisode?.id === 'ep-3' || nextEpisode?.id === 'ep-4';
 
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
