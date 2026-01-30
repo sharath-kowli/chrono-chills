@@ -1,5 +1,7 @@
-import { Lock, X, Zap } from 'lucide-react';
+import { Lock, Zap, Ticket } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -11,17 +13,47 @@ interface PaywallModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   episodeTitle: string;
+  onUnlock?: () => void;
 }
 
-export function PaywallModal({ open, onOpenChange, episodeTitle }: PaywallModalProps) {
+// Demo codes - in production this would validate against a backend
+const VALID_CODES = ['STATIC2024', 'HORROR', 'PREVIEW'];
+
+export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: PaywallModalProps) {
+  const [showRedeemInput, setShowRedeemInput] = useState(false);
+  const [redeemCode, setRedeemCode] = useState('');
+  const [redeemError, setRedeemError] = useState('');
+
   const handleSubscribe = () => {
-    // Dummy action - would integrate with Stripe
     console.log('Subscribe clicked - would trigger Stripe checkout');
     alert('This is a demo paywall. In production, this would open Stripe checkout.');
   };
 
+  const handleRedeem = () => {
+    const code = redeemCode.trim().toUpperCase();
+    if (VALID_CODES.includes(code)) {
+      console.log('Valid code redeemed:', code);
+      setRedeemError('');
+      setRedeemCode('');
+      setShowRedeemInput(false);
+      onUnlock?.();
+      onOpenChange(false);
+    } else {
+      setRedeemError('Invalid code. Please try again.');
+    }
+  };
+
+  const handleClose = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowRedeemInput(false);
+      setRedeemCode('');
+      setRedeemError('');
+    }
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="border-border bg-card sm:max-w-md">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
@@ -71,6 +103,40 @@ export function PaywallModal({ open, onOpenChange, episodeTitle }: PaywallModalP
           >
             Start Watching Now
           </Button>
+          
+          {/* Redeem Code Section */}
+          <div className="border-t border-border pt-4">
+            {!showRedeemInput ? (
+              <button
+                onClick={() => setShowRedeemInput(true)}
+                className="flex w-full items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Ticket className="h-4 w-4" />
+                Have a code? Redeem here
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter code"
+                    value={redeemCode}
+                    onChange={(e) => {
+                      setRedeemCode(e.target.value);
+                      setRedeemError('');
+                    }}
+                    className="flex-1 bg-background"
+                    onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
+                  />
+                  <Button onClick={handleRedeem} variant="secondary">
+                    Redeem
+                  </Button>
+                </div>
+                {redeemError && (
+                  <p className="text-sm text-destructive">{redeemError}</p>
+                )}
+              </div>
+            )}
+          </div>
           
           <p className="text-center text-xs text-muted-foreground">
             By subscribing, you agree to our Terms of Service
