@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Play, Lock } from 'lucide-react';
+import { ArrowLeft, Play, Lock } from 'lucide-react';
 import { series } from '@/data/episodes';
 import { Button } from '@/components/ui/button';
 import { PaywallModal } from '@/components/PaywallModal';
@@ -168,189 +168,92 @@ const Watch = () => {
   }
   
   return (
-    <div className="min-h-screen bg-horror-dark">
-      {/* Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-horror-dark to-transparent">
-        <div className="container flex h-16 items-center px-4">
+    <div className="fixed inset-0 bg-background">
+      {/* Back button overlay */}
+      <header className="fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
+        <div className="flex h-14 items-center px-4">
           <Link 
             to="/" 
-            className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span className="text-sm">Back</span>
           </Link>
         </div>
       </header>
       
-      {/* Video player */}
-      <div className="relative flex justify-center pt-16">
-        <div className="vhs-lines relative aspect-[9/16] w-full max-w-md bg-background">
-          <div id="youtube-player" className="h-full w-full" />
-          
-          {/* Next Episode Prompt Overlay */}
-          {showNextPrompt && nextEpisode && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
-              <div className="p-6 text-center">
-                <p className="mb-2 text-sm text-muted-foreground">Up Next</p>
-                <h3 className="font-display text-2xl tracking-wide text-foreground">
-                  {nextEpisode.title}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
-                
-                {/* Thumbnail preview */}
-                <div className="relative mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
-                  <img 
-                    src={nextEpisode.thumbnail} 
-                    alt={nextEpisode.title}
-                    className="h-full w-full object-cover"
-                  />
-                  {isNextEpisodeLocked && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                      <Lock className="h-6 w-6 text-primary" />
-                    </div>
-                  )}
-                </div>
-                
-                <Button
-                  onClick={goToNextEpisode}
-                  className="mt-6 gap-2 bg-primary px-8 py-6 text-lg hover:bg-primary/90"
-                >
-                  {isNextEpisodeLocked ? (
-                    <>
-                      <Lock className="h-5 w-5" />
-                      Unlock Episode
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-5 w-5 fill-current" />
-                      Play Now
-                    </>
-                  )}
-                </Button>
-                
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {isNextEpisodeLocked ? 'Premium content' : `Starting in ${countdown}...`}
-                </p>
-                
-                <button
-                  onClick={() => setShowNextPrompt(false)}
-                  className="mt-4 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Episode info */}
-      <div className="container px-4 py-8">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="font-display text-lg tracking-wider text-primary">
-              Episode {episode.number}
-            </span>
-            <h1 className="mt-1 font-display text-3xl tracking-wide text-foreground md:text-4xl">
-              {episode.title}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {episode.subtitle}
-            </p>
-          </div>
-          <span className="shrink-0 text-sm text-muted-foreground">
-            {episode.duration}
+      {/* Full viewport video player */}
+      <div className="vhs-lines relative h-full w-full bg-background">
+        <div id="youtube-player" className="h-full w-full" />
+        
+        {/* Episode info overlay at bottom */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
+          <span className="font-display text-sm tracking-wider text-primary">
+            Episode {episode.number}
           </span>
+          <h1 className="font-display text-xl tracking-wide text-foreground">
+            {episode.title}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {episode.subtitle}
+          </p>
         </div>
         
-        {/* Navigation */}
-        <div className="mt-8 flex items-center justify-between gap-4">
-          {prevEpisode ? (
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/watch/${prevEpisode.id}`)}
-              className="flex items-center gap-2 border-border bg-card hover:bg-muted"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-            </Button>
-          ) : (
-            <div />
-          )}
-          
-          {nextEpisode ? (
-            <Button
-              onClick={() => {
-                if (isNextEpisodeLocked) {
-                  setShowPaywall(true);
-                } else {
-                  navigate(`/watch/${nextEpisode.id}`);
-                }
-              }}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-            >
-              {isNextEpisodeLocked ? (
-                <>
-                  <Lock className="h-4 w-4" />
-                  <span>Unlock Episode 3</span>
-                </>
-              ) : (
-                <>
-                  <span>Next Episode</span>
-                  <ChevronRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          ) : (
-            <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
-              <p className="text-sm text-muted-foreground">More episodes coming soon...</p>
-            </div>
-          )}
-        </div>
-        
-        {/* Up next preview */}
-        {nextEpisode && (
-          <div className="mt-12">
-            <h2 className="mb-4 font-display text-xl tracking-wide text-foreground">
-              Up Next
-            </h2>
-            <div
-              onClick={() => {
-                if (isNextEpisodeLocked) {
-                  setShowPaywall(true);
-                } else {
-                  navigate(`/watch/${nextEpisode.id}`);
-                }
-              }}
-              className="episode-card group flex cursor-pointer gap-4 p-4"
-            >
-              <div className="relative aspect-[9/16] w-24 shrink-0 overflow-hidden rounded">
-                <img
-                  src={nextEpisode.thumbnail}
+        {/* Next Episode Prompt Overlay */}
+        {showNextPrompt && nextEpisode && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
+            <div className="p-6 text-center">
+              <p className="mb-2 text-sm text-muted-foreground">Up Next</p>
+              <h3 className="font-display text-2xl tracking-wide text-foreground">
+                {nextEpisode.title}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
+              
+              {/* Thumbnail preview */}
+              <div className="relative mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
+                <img 
+                  src={nextEpisode.thumbnail} 
                   alt={nextEpisode.title}
                   className="h-full w-full object-cover"
                 />
-                <div className="vhs-lines absolute inset-0" />
                 {isNextEpisodeLocked && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                    <Lock className="h-5 w-5 text-primary" />
+                    <Lock className="h-6 w-6 text-primary" />
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-sm text-primary">
-                  Episode {nextEpisode.number}
-                  {isNextEpisodeLocked && ' • Premium'}
-                </span>
-                <h3 className="font-display text-lg tracking-wide text-foreground group-hover:text-primary">
-                  {nextEpisode.title}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
-              </div>
+              
+              <Button
+                onClick={goToNextEpisode}
+                className="mt-6 gap-2 bg-primary px-8 py-6 text-lg hover:bg-primary/90"
+              >
+                {isNextEpisodeLocked ? (
+                  <>
+                    <Lock className="h-5 w-5" />
+                    Unlock Episode
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-5 w-5 fill-current" />
+                    Play Now
+                  </>
+                )}
+              </Button>
+              
+              <p className="mt-3 text-sm text-muted-foreground">
+                {isNextEpisodeLocked ? 'Premium content' : `Starting in ${countdown}...`}
+              </p>
+              
+              <button
+                onClick={() => setShowNextPrompt(false)}
+                className="mt-4 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
       </div>
+      
       
       {/* Paywall Modal */}
       {nextEpisode && (
