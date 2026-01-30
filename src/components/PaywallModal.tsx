@@ -17,7 +17,7 @@ interface PaywallModalProps {
 }
 
 // Demo codes - in production this would validate against a backend
-const VALID_CODES = ['STATIC2024', 'HORROR', 'PREVIEW'];
+const VALID_CODES = ['MERIROSVO1'];
 
 export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: PaywallModalProps) {
   const [showRedeemInput, setShowRedeemInput] = useState(false);
