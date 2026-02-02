@@ -63,7 +63,7 @@ export const series: Series = {
       subtitle: 'Some doors should stay closed.',
       duration: '0:35',
       thumbnail: episode4Thumb,
-      youtubeId: 'nhak1qzwHAw',
+      youtubeId: 'rkrPt5vUSvk',
     },
   ],
 };
