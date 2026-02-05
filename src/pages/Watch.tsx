@@ -29,7 +29,7 @@ const Watch = () => {
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
   
   // Check if next episode is locked (Episodes 3 and 4), unless already unlocked
-  const isNextEpisodePremium = nextEpisode?.id === 'ep-3' || nextEpisode?.id === 'ep-4';
+  const isNextEpisodePremium = nextEpisode?.id === 'ep-3' || nextEpisode?.id === 'ep-4' || nextEpisode?.id === 'ep-5' || nextEpisode?.id === 'ep-6';
   const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked();
 
   const goToNextEpisode = useCallback(() => {

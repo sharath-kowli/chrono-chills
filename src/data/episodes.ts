@@ -22,6 +22,8 @@ import episode1Thumb from '@/assets/episode-1-still-here.jpg';
 import episode2Thumb from '@/assets/episode-2-it-moved.jpg';
 import episode3Thumb from '@/assets/episode-3-static.jpg';
 import episode4Thumb from '@/assets/episode-4-behind-the-door.jpg';
+import episode5Thumb from '@/assets/episode-5.jpg';
+import episode6Thumb from '@/assets/episode-6.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -64,6 +66,24 @@ export const series: Series = {
       duration: '0:35',
       thumbnail: episode4Thumb,
       youtubeId: 'rkrPt5vUSvk',
+    },
+    {
+      id: 'ep-5',
+      number: 5,
+      title: 'Episode 5',
+      subtitle: 'The nightmare continues.',
+      duration: '0:40',
+      thumbnail: episode5Thumb,
+      youtubeId: 'WoZyTFyUHas',
+    },
+    {
+      id: 'ep-6',
+      number: 6,
+      title: 'Episode 6',
+      subtitle: 'There is no escape.',
+      duration: '0:45',
+      thumbnail: episode6Thumb,
+      youtubeId: 'K-fELkj0EPY',
     },
   ],
 };
