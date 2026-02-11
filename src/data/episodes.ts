@@ -24,6 +24,8 @@ import episode3Thumb from '@/assets/episode-3-static.jpg';
 import episode4Thumb from '@/assets/episode-4-behind-the-door.jpg';
 import episode5Thumb from '@/assets/episode-5.jpg';
 import episode6Thumb from '@/assets/episode-6.jpg';
+import episode7Thumb from '@/assets/episode-7.jpg';
+import episode8Thumb from '@/assets/episode-8.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -84,6 +86,24 @@ export const series: Series = {
       duration: '0:45',
       thumbnail: episode6Thumb,
       youtubeId: 'K-fELkj0EPY',
+    },
+    {
+      id: 'ep-7',
+      number: 7,
+      title: 'Episode 7',
+      subtitle: 'It remembers you.',
+      duration: '0:42',
+      thumbnail: episode7Thumb,
+      youtubeId: '1HCv_TVLm4k',
+    },
+    {
+      id: 'ep-8',
+      number: 8,
+      title: 'Episode 8',
+      subtitle: 'You were never alone.',
+      duration: '0:38',
+      thumbnail: episode8Thumb,
+      youtubeId: 'Q3x1NUEIf-I',
     },
   ],
 };
