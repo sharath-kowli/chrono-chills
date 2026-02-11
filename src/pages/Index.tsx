@@ -22,7 +22,7 @@ const Index = () => {
           </span>
         </div>
         
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {series.episodes.map((episode, index) => (
             <EpisodeCard 
               key={episode.id} 
