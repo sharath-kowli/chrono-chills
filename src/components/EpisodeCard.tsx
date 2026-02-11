@@ -29,61 +29,66 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
       <Link
         to={`/watch/${episode.id}`}
         onClick={handleClick}
-        className="group flex items-stretch gap-4 rounded-lg bg-card p-2 transition-all duration-300 hover:bg-muted/50 hover:shadow-lg hover:shadow-primary/10"
+        className="episode-card group block w-36 flex-shrink-0 snap-start sm:w-44"
         style={{ animationDelay: `${index * 60}ms` }}
       >
-        {/* Thumbnail */}
-        <div className="relative h-24 w-16 flex-shrink-0 overflow-hidden rounded-md sm:h-28 sm:w-20">
+        <div className="relative aspect-[9/16] overflow-hidden rounded-lg">
           <img
             src={episode.thumbnail}
             alt={episode.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="vhs-lines absolute inset-0" />
+          <div className="absolute inset-0 bg-gradient-to-t from-horror-dark via-transparent to-transparent" />
           
           {isLocked ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
-              <Lock className="h-5 w-5 text-primary" />
+              <Lock className="h-6 w-6 text-primary" />
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/90">
-                <Play className="h-4 w-4 fill-primary-foreground text-primary-foreground" />
+              <div className="play-pulse flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 backdrop-blur-sm">
+                <Play className="h-5 w-5 fill-primary-foreground text-primary-foreground" />
               </div>
             </div>
           )}
-        </div>
-        
-        {/* Info */}
-        <div className="flex flex-1 flex-col justify-center gap-0.5 overflow-hidden py-1">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-xs tracking-wider text-muted-foreground">
+          
+          {/* Episode number */}
+          <div className="absolute left-2 top-2 z-20">
+            <span className="font-display text-lg tracking-wider text-foreground/80">
               EP {episode.number.toString().padStart(2, '0')}
             </span>
-            {isLocked && (
-              <span className="rounded bg-primary/20 px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary">
+          </div>
+          
+          {/* Badges */}
+          {isLocked && (
+            <div className="absolute right-2 top-2 z-20">
+              <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
                 PREMIUM
               </span>
-            )}
-            {episode.isNew && !isLocked && (
+            </div>
+          )}
+          {episode.isNew && !isLocked && (
+            <div className="absolute right-2 top-2 z-20">
               <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
                 NEW
               </span>
-            )}
+            </div>
+          )}
+          
+          {/* Duration */}
+          <div className="absolute bottom-2 right-2 z-20">
+            <span className="rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-foreground backdrop-blur-sm">
+              {episode.duration}
+            </span>
           </div>
-          <h3 className="truncate font-display text-lg tracking-wide text-foreground transition-colors group-hover:text-primary">
-            {episode.title}
-          </h3>
-          <p className="truncate text-xs text-muted-foreground">
-            {episode.subtitle}
-          </p>
-        </div>
-        
-        {/* Duration */}
-        <div className="flex flex-shrink-0 items-center pr-1">
-          <span className="text-xs text-muted-foreground">
-            {episode.duration}
-          </span>
+          
+          {/* Title overlay at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 p-2 pt-6">
+            <h3 className="font-display text-sm leading-tight tracking-wide text-foreground">
+              {episode.title}
+            </h3>
+          </div>
         </div>
       </Link>
       
