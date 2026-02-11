@@ -22,7 +22,7 @@ const Index = () => {
           </span>
         </div>
         
-        <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4">
           {series.episodes.map((episode, index) => (
             <EpisodeCard 
               key={episode.id} 
