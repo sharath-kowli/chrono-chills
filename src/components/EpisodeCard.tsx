@@ -15,7 +15,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const [showPaywall, setShowPaywall] = useState(false);
   
   // Episodes 3 and 4 require payment, unless already unlocked
-  const isPremiumEpisode = episode.id === 'ep-3' || episode.id === 'ep-4' || episode.id === 'ep-5' || episode.id === 'ep-6';
+  const isPremiumEpisode = episode.number >= 3;
   const isLocked = isPremiumEpisode && !isPremiumUnlocked();
   
   const handleClick = (e: React.MouseEvent) => {
