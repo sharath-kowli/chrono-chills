@@ -26,6 +26,7 @@ import episode5Thumb from '@/assets/episode-5.jpg';
 import episode6Thumb from '@/assets/episode-6.jpg';
 import episode7Thumb from '@/assets/episode-7.jpg';
 import episode8Thumb from '@/assets/episode-8.jpg';
+import episode9Thumb from '@/assets/episode-9.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -104,6 +105,15 @@ export const series: Series = {
       duration: '0:38',
       thumbnail: episode8Thumb,
       youtubeId: 'Q3x1NUEIf-I',
+    },
+    {
+      id: 'ep-9',
+      number: 9,
+      title: 'Episode 9',
+      subtitle: 'The signal returns.',
+      duration: '0:36',
+      thumbnail: episode9Thumb,
+      youtubeId: 'svMRhBFejI8',
     },
   ],
 };
