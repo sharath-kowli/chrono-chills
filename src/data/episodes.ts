@@ -27,6 +27,7 @@ import episode6Thumb from '@/assets/episode-6.jpg';
 import episode7Thumb from '@/assets/episode-7.jpg';
 import episode8Thumb from '@/assets/episode-8.jpg';
 import episode9Thumb from '@/assets/episode-9.jpg';
+import episode10Thumb from '@/assets/episode-10.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -114,6 +115,15 @@ export const series: Series = {
       duration: '0:36',
       thumbnail: episode9Thumb,
       youtubeId: 'svMRhBFejI8',
+    },
+    {
+      id: 'ep-10',
+      number: 10,
+      title: 'Episode 10',
+      subtitle: 'It never ended.',
+      duration: '0:34',
+      thumbnail: episode10Thumb,
+      youtubeId: 'tfzYnnhmDoQ',
     },
   ],
 };
