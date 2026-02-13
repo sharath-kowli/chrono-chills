@@ -41,7 +41,7 @@ export const series: Series = {
       subtitle: 'It started with footsteps.',
       duration: '0:38',
       thumbnail: episode1Thumb,
-      youtubeId: 'zRs5wtVEwII',
+      youtubeId: 'Hk0QL6w7WdU',
       isNew: true,
     },
     {
@@ -51,7 +51,7 @@ export const series: Series = {
       subtitle: 'The corner of your eye never lies.',
       duration: '0:32',
       thumbnail: episode2Thumb,
-      youtubeId: '0DXmaV2qB2k',
+      youtubeId: 'OnG0wHQ3KsM',
     },
     {
       id: 'ep-3',
