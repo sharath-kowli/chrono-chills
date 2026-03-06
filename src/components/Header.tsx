@@ -24,7 +24,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate("/");
+    window.location.href = "/";
   };
 
   return (
