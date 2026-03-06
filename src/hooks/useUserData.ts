@@ -36,7 +36,8 @@ export function useWatchHistory() {
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
-      return data as WatchHistory[];
+      // FIX: Cast through unknown first
+      return data as unknown as WatchHistory[];
     },
   });
 }
@@ -58,7 +59,8 @@ export function useEpisodeProgress(episodeId: string) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as WatchHistory | null;
+      // FIX: Cast through unknown first
+      return data as unknown as WatchHistory | null;
     },
     enabled: !!episodeId,
   });
@@ -119,7 +121,8 @@ export function useBookmarks() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Bookmark[];
+      // FIX: Cast through unknown first
+      return data as unknown as Bookmark[];
     },
   });
 }
