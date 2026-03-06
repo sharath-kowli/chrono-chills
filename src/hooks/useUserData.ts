@@ -35,7 +35,7 @@ export function useWatchHistory() {
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
-      return data as WatchHistory[];
+      return (data as unknown) as WatchHistory[];
     },
   });
 }
