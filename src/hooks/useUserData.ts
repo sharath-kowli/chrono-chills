@@ -1,42 +1,62 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-async function getUserId() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user?.id ?? null;
+// --- Types ---
+export interface WatchHistory {
+  id: string;
+  user_id: string;
+  episode_id: string;
+  timestamp: number;
+  completed: boolean;
+  updated_at: string;
 }
 
-// Watch History
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  episode_id: string;
+  created_at: string;
+}
+
+// --- Watch History Hooks ---
+
 export function useWatchHistory() {
   return useQuery({
-    queryKey: ["watch_history"],
+    queryKey: ["watch-history"],
     queryFn: async () => {
-      const userId = await getUserId();
-      if (!userId) return [];
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return [];
+
       const { data, error } = await supabase
-        .from("watch_history")
+        .from("watch_history" as any)
         .select("*")
-        .eq("user_id", userId);
+        .order("updated_at", { ascending: false });
+
       if (error) throw error;
-      return data;
+      return data as WatchHistory[];
     },
   });
 }
 
 export function useEpisodeProgress(episodeId: string) {
   return useQuery({
-    queryKey: ["watch_history", episodeId],
+    queryKey: ["watch-history", episodeId],
     queryFn: async () => {
-      const userId = await getUserId();
-      if (!userId) return null;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return null;
+
       const { data, error } = await supabase
-        .from("watch_history")
+        .from("watch_history" as any)
         .select("*")
-        .eq("user_id", userId)
         .eq("episode_id", episodeId)
         .maybeSingle();
+
       if (error) throw error;
-      return data;
+      return data as WatchHistory | null;
     },
     enabled: !!episodeId,
   });
@@ -44,37 +64,59 @@ export function useEpisodeProgress(episodeId: string) {
 
 export function useUpdateWatchProgress() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async ({ episodeId, timestamp, completed }: { episodeId: string; timestamp?: number; completed?: boolean }) => {
-      const userId = await getUserId();
-      if (!userId) throw new Error("Not authenticated");
-      const { error } = await supabase
-        .from("watch_history")
-        .upsert(
-          { user_id: userId, episode_id: episodeId, timestamp: timestamp ?? 0, completed: completed ?? false },
-          { onConflict: "user_id,episode_id" }
-        );
+    mutationFn: async ({
+      episodeId,
+      timestamp,
+      completed = false,
+    }: {
+      episodeId: string;
+      timestamp: number;
+      completed?: boolean;
+    }) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not logged in");
+
+      const { error } = await supabase.from("watch_history" as any).upsert(
+        {
+          user_id: session.user.id,
+          episode_id: episodeId,
+          timestamp: Math.floor(timestamp),
+          completed,
+        } as any,
+        { onConflict: "user_id,episode_id" },
+      );
+
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watch_history"] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["watch-history"] });
+      queryClient.invalidateQueries({ queryKey: ["watch-history", variables.episodeId] });
     },
   });
 }
 
-// Bookmarks
+// --- Bookmarks Hooks ---
+
 export function useBookmarks() {
   return useQuery({
     queryKey: ["bookmarks"],
     queryFn: async () => {
-      const userId = await getUserId();
-      if (!userId) return [];
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return [];
+
       const { data, error } = await supabase
-        .from("bookmarks")
+        .from("bookmarks" as any)
         .select("*")
-        .eq("user_id", userId);
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
-      return data;
+      return data as Bookmark[];
     },
   });
 }
@@ -83,14 +125,17 @@ export function useIsBookmarked(episodeId: string) {
   return useQuery({
     queryKey: ["bookmarks", episodeId],
     queryFn: async () => {
-      const userId = await getUserId();
-      if (!userId) return false;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return false;
+
       const { data, error } = await supabase
-        .from("bookmarks")
+        .from("bookmarks" as any)
         .select("id")
-        .eq("user_id", userId)
         .eq("episode_id", episodeId)
         .maybeSingle();
+
       if (error) throw error;
       return !!data;
     },
@@ -100,26 +145,36 @@ export function useIsBookmarked(episodeId: string) {
 
 export function useToggleBookmark() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (episodeId: string) => {
-      const userId = await getUserId();
-      if (!userId) throw new Error("Not authenticated");
-      const { data: existing } = await supabase
-        .from("bookmarks")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("episode_id", episodeId)
-        .maybeSingle();
-      if (existing) {
-        const { error } = await supabase.from("bookmarks").delete().eq("id", existing.id);
+    mutationFn: async ({ episodeId, isBookmarked }: { episodeId: string; isBookmarked: boolean }) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not logged in");
+
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from("bookmarks" as any)
+          .delete()
+          .eq("episode_id", episodeId)
+          .eq("user_id", session.user.id);
+
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("bookmarks").insert({ user_id: userId, episode_id: episodeId });
+        // Add bookmark
+        const { error } = await supabase.from("bookmarks" as any).insert({
+          user_id: session.user.id,
+          episode_id: episodeId,
+        } as any);
+
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["bookmarks", variables.episodeId] });
     },
   });
 }
