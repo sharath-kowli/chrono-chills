@@ -92,15 +92,19 @@ const Watch = () => {
         events: {
           onStateChange: (event: any) => {
             // Video ended (state = 0)
-            if (event.data === 0 && nextEpisode) {
+            if (event.data === 0) {
               console.log("Analytics: episode_completed", {
                 episodeId: episode.id,
                 episodeNumber: episode.number,
                 title: episode.title,
                 timestamp: new Date().toISOString(),
               });
-              setShowNextPrompt(true);
-              setCountdown(5);
+              // Mark as completed
+              updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+              if (nextEpisode) {
+                setShowNextPrompt(true);
+                setCountdown(5);
+              }
             }
           },
         },
