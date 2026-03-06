@@ -56,7 +56,7 @@ export function useEpisodeProgress(episodeId: string) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as WatchHistory | null;
+      return (data as unknown) as WatchHistory | null;
     },
     enabled: !!episodeId,
   });
@@ -116,7 +116,7 @@ export function useBookmarks() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Bookmark[];
+      return (data as unknown) as Bookmark[];
     },
   });
 }
