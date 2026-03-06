@@ -29,6 +29,7 @@ export function useWatchHistory() {
       } = await supabase.auth.getSession();
       if (!session) return [];
 
+      // @ts-ignore - Tables don't exist in generated types yet
       const { data, error } = await supabase
         .from("watch_history" as any)
         .select("*")
@@ -49,6 +50,7 @@ export function useEpisodeProgress(episodeId: string) {
       } = await supabase.auth.getSession();
       if (!session) return null;
 
+      // @ts-ignore - Tables don't exist in generated types yet
       const { data, error } = await supabase
         .from("watch_history" as any)
         .select("*")
@@ -110,6 +112,7 @@ export function useBookmarks() {
       } = await supabase.auth.getSession();
       if (!session) return [];
 
+      // @ts-ignore - Tables don't exist in generated types yet
       const { data, error } = await supabase
         .from("bookmarks" as any)
         .select("*")
@@ -130,6 +133,7 @@ export function useIsBookmarked(episodeId: string) {
       } = await supabase.auth.getSession();
       if (!session) return false;
 
+      // @ts-ignore - Tables don't exist in generated types yet
       const { data, error } = await supabase
         .from("bookmarks" as any)
         .select("id")
@@ -155,6 +159,7 @@ export function useToggleBookmark() {
 
       if (isBookmarked) {
         // Remove bookmark
+        // @ts-ignore - Tables don't exist in generated types yet
         const { error } = await supabase
           .from("bookmarks" as any)
           .delete()
@@ -164,6 +169,7 @@ export function useToggleBookmark() {
         if (error) throw error;
       } else {
         // Add bookmark
+        // @ts-ignore - Tables don't exist in generated types yet
         const { error } = await supabase.from("bookmarks" as any).insert({
           user_id: session.user.id,
           episode_id: episodeId,
