@@ -92,15 +92,19 @@ const Watch = () => {
         events: {
           onStateChange: (event: any) => {
             // Video ended (state = 0)
-            if (event.data === 0 && nextEpisode) {
+            if (event.data === 0) {
               console.log("Analytics: episode_completed", {
                 episodeId: episode.id,
                 episodeNumber: episode.number,
                 title: episode.title,
                 timestamp: new Date().toISOString(),
               });
-              setShowNextPrompt(true);
-              setCountdown(5);
+              // Mark as completed
+              updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+              if (nextEpisode) {
+                setShowNextPrompt(true);
+                setCountdown(5);
+              }
             }
           },
         },
@@ -159,17 +163,28 @@ const Watch = () => {
     };
   }, [showNextPrompt, goToNextEpisode]);
 
-  // Track episode view (placeholder for analytics)
+  // Track episode view and save progress periodically
   useEffect(() => {
-    if (episode) {
-      console.log("Analytics: episode_started", {
-        episodeId: episode.id,
-        episodeNumber: episode.number,
-        title: episode.title,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }, [episode]);
+    if (!episode) return;
+    console.log("Analytics: episode_started", {
+      episodeId: episode.id,
+      episodeNumber: episode.number,
+      title: episode.title,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Save progress every 10 seconds
+    const progressInterval = setInterval(() => {
+      if (playerRef.current?.getCurrentTime && session) {
+        const currentTime = playerRef.current.getCurrentTime();
+        if (currentTime > 0) {
+          updateProgress({ episodeId: episode.id, timestamp: currentTime });
+        }
+      }
+    }, 10000);
+
+    return () => clearInterval(progressInterval);
+  }, [episode, session, updateProgress]);
 
   if (!episode) {
     return (
@@ -203,10 +218,26 @@ const Watch = () => {
         <div id="youtube-player" className="h-full w-full" />
 
         {/* Episode info overlay at bottom */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
-          <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
-          <h1 className="font-display text-xl tracking-wide text-foreground">{episode.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{episode.subtitle}</p>
+        <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
+          <div className="flex items-end justify-between">
+            <div className="pointer-events-none">
+              <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
+              <h1 className="font-display text-xl tracking-wide text-foreground">{episode.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{episode.subtitle}</p>
+            </div>
+            {session && (
+              <button
+                onClick={() => toggleBookmark({ episodeId: episode.id, isBookmarked: !!isBookmarked })}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
+              >
+                {isBookmarked ? (
+                  <BookmarkMinus className="h-5 w-5 text-primary" />
+                ) : (
+                  <BookmarkPlus className="h-5 w-5" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Next Episode Prompt Overlay */}
