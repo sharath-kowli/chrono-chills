@@ -1,9 +1,10 @@
-import { Play, Lock } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import type { Episode } from '@/data/episodes';
-import { PaywallModal } from './PaywallModal';
-import { isPremiumUnlocked } from '@/lib/unlock';
+import { Play, Lock, Bookmark } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import type { Episode } from "@/data/episodes";
+import { PaywallModal } from "./PaywallModal";
+import { isPremiumUnlocked } from "@/lib/unlock";
+import { useEpisodeProgress, useIsBookmarked } from "@/hooks/useUserData";
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -13,10 +14,14 @@ interface EpisodeCardProps {
 export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
-  
+
+  // Custom user data
+  const { data: progress } = useEpisodeProgress(episode.id);
+  const { data: isBookmarked } = useIsBookmarked(episode.id);
+
   const isPremiumEpisode = episode.number >= 3;
   const isLocked = isPremiumEpisode && !isPremiumUnlocked();
-  
+
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {
       e.preventDefault();
@@ -40,7 +45,14 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
           />
           <div className="vhs-lines absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-t from-horror-dark via-transparent to-transparent" />
-          
+
+          {/* Bookmark Badge */}
+          {isBookmarked && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
+              <Bookmark className="h-5 w-5 fill-primary text-primary drop-shadow-md" />
+            </div>
+          )}
+
           {isLocked ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
               <Lock className="h-6 w-6 text-primary" />
@@ -52,14 +64,14 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
               </div>
             </div>
           )}
-          
+
           {/* Episode number */}
           <div className="absolute left-2 top-2 z-20">
             <span className="font-display text-lg tracking-wider text-foreground/80">
-              EP {episode.number.toString().padStart(2, '0')}
+              EP {episode.number.toString().padStart(2, "0")}
             </span>
           </div>
-          
+
           {/* Badges */}
           {isLocked && (
             <div className="absolute right-2 top-2 z-20">
@@ -75,25 +87,38 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
               </span>
             </div>
           )}
-          
+
           {/* Duration */}
           <div className="absolute bottom-2 right-2 z-20">
             <span className="rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-foreground backdrop-blur-sm">
               {episode.duration}
             </span>
           </div>
-          
+
           {/* Title overlay at bottom */}
           <div className="absolute bottom-0 left-0 right-0 z-20 p-2 pt-6">
-            <h3 className="font-display text-sm leading-tight tracking-wide text-foreground">
-              {episode.title}
-            </h3>
+            <h3 className="font-display text-sm leading-tight tracking-wide text-foreground">{episode.title}</h3>
           </div>
+
+          {/* Progress Bar overlay at VERY bottom */}
+          {progress && !progress.completed && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-background/50 z-30">
+              <div
+                className="h-full bg-primary"
+                style={{ width: `50%` /* Defaulting visible progress as indicator */ }}
+              />
+            </div>
+          )}
+          {progress && progress.completed && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-background/50 z-30">
+              <div className="h-full bg-primary w-full" />
+            </div>
+          )}
         </div>
       </Link>
-      
-      <PaywallModal 
-        open={showPaywall} 
+
+      <PaywallModal
+        open={showPaywall}
         onOpenChange={setShowPaywall}
         episodeTitle={episode.title}
         onUnlock={() => navigate(`/watch/${episode.id}`)}
