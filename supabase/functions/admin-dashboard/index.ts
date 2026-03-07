@@ -15,12 +15,24 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    const adminPassword = Deno.env.get("ADMIN_DASHBOARD_PASSWORD")!;
 
     // Verify the requesting user is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Parse request body for password
+    const body = await req.json().catch(() => ({}));
+    const submittedPassword = body?.password;
+
+    if (!submittedPassword || submittedPassword !== adminPassword) {
+      return new Response(JSON.stringify({ error: "Invalid dashboard password" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
