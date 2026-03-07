@@ -26,55 +26,76 @@ interface BookmarkEntry {
 export default function Admin() {
   const [watchHistory, setWatchHistory] = useState<WatchHistoryEntry[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-      const { data, error } = await supabase.functions.invoke("admin-dashboard");
-
-      if (error) {
-        setError(error.message || "Access denied");
-        setLoading(false);
-        return;
-      }
-
-      if (data?.error) {
-        setError(data.error);
-        setLoading(false);
-        return;
-      }
-
-      setWatchHistory(data.watchHistory || []);
-      setBookmarks(data.bookmarks || []);
-      setLoading(false);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/auth");
+      return;
     }
 
-    fetchData();
+    const { data, error: fnError } = await supabase.functions.invoke("admin-dashboard", {
+      body: { password },
+    });
+
+    if (fnError) {
+      setError(fnError.message || "Access denied");
+      setLoading(false);
+      return;
+    }
+
+    if (data?.error) {
+      setError(data.error);
+      setLoading(false);
+      return;
+    }
+
+    setWatchHistory(data.watchHistory || []);
+    setBookmarks(data.bookmarks || []);
+    setAuthenticated(true);
+    setLoading(false);
+  };
+
+  // Check if user is logged in on mount
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) navigate("/auth");
+    }
+    checkAuth();
   }, [navigate]);
 
-  if (loading) {
+  if (!authenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground text-lg">Loading admin dashboard...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <p className="text-destructive text-xl font-bold">Access Denied</p>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
+        <form onSubmit={handlePasswordSubmit} className="w-full max-w-sm space-y-4 p-8">
+          <h1 className="text-xl font-bold text-foreground text-center">Dashboard Access</h1>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            className="w-full px-4 py-3 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            autoFocus
+          />
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading || !password}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50"
+          >
+            {loading ? "Verifying..." : "Access"}
+          </button>
+        </form>
       </div>
     );
   }
