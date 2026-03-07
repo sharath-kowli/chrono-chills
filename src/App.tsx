@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Watch from "./pages/Watch";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 
 const queryClient = new QueryClient();
