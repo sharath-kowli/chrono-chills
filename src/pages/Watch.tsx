@@ -43,8 +43,8 @@ const Watch = () => {
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
-  // Check if next episode is locked (Episodes 3 and 4), unless already unlocked
-  const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 3;
+  // Check if next episode is locked (Episode 10), unless already unlocked
+  const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 10;
   const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked();
 
   const goToNextEpisode = useCallback(() => {

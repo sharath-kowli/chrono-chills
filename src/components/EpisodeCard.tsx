@@ -19,7 +19,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const { data: progress } = useEpisodeProgress(episode.id);
   const { data: isBookmarked } = useIsBookmarked(episode.id);
 
-  const isPremiumEpisode = episode.number >= 3;
+  const isPremiumEpisode = episode.number >= 10;
   const isLocked = isPremiumEpisode && !isPremiumUnlocked();
 
   const handleClick = (e: React.MouseEvent) => {
