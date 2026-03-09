@@ -8,6 +8,7 @@ import { isPremiumUnlocked } from "@/lib/unlock";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { BookmarkPlus, BookmarkMinus } from "lucide-react";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -88,6 +89,7 @@ const Watch = () => {
           autoplay: 1,
           rel: 0,
           modestbranding: 1,
+          start: progress?.timestamp && !progress?.completed ? Math.max(0, progress.timestamp - 1) : undefined,
         },
         events: {
           onStateChange: (event: any) => {
@@ -123,7 +125,7 @@ const Watch = () => {
         playerRef.current = null;
       }
     };
-  }, [episode, nextEpisode]);
+  }, [episode, nextEpisode, progress]);
 
   // Reset state when episode changes
   useEffect(() => {
@@ -227,7 +229,16 @@ const Watch = () => {
             </div>
             {session && (
               <button
-                onClick={() => toggleBookmark({ episodeId: episode.id, isBookmarked: !!isBookmarked })}
+                onClick={() => {
+                  toggleBookmark(
+                    { episodeId: episode.id, isBookmarked: !!isBookmarked },
+                    {
+                      onSuccess: () => {
+                        toast(isBookmarked ? "Bookmark removed" : "Episode bookmarked");
+                      },
+                    }
+                  );
+                }}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
               >
                 {isBookmarked ? (
