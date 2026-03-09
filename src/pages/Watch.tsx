@@ -239,7 +239,7 @@ const Watch = () => {
                     }
                   );
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
               >
                 {isBookmarked ? (
                   <BookmarkMinus className="h-5 w-5 text-primary" />
