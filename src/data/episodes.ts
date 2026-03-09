@@ -139,7 +139,7 @@ export const series: Series = {
       title: 'Episode 11',
       subtitle: 'The walls have eyes.',
       duration: '0:40',
-      thumbnail: episode10Thumb,
+      thumbnail: episode11Thumb,
       streamId: 'b55d4334bb431ab2706d3dd96d45e027',
     },
     {
@@ -148,7 +148,7 @@ export const series: Series = {
       title: 'Episode 12',
       subtitle: 'Nowhere to hide.',
       duration: '0:38',
-      thumbnail: episode10Thumb,
+      thumbnail: episode12Thumb,
       streamId: 'd2b5377041c7ec31ea15ebf9651cdc1f',
     },
     {
@@ -157,7 +157,7 @@ export const series: Series = {
       title: 'Episode 13',
       subtitle: 'It follows.',
       duration: '0:42',
-      thumbnail: episode10Thumb,
+      thumbnail: episode13Thumb,
       streamId: '6ab03e4790118f990aa837c53bceaa26',
     },
     {
@@ -166,7 +166,7 @@ export const series: Series = {
       title: 'Episode 14',
       subtitle: 'The last warning.',
       duration: '0:36',
-      thumbnail: episode10Thumb,
+      thumbnail: episode14Thumb,
       streamId: '8f90595c10387f4cf9923c53595f5fbe',
     },
     {
@@ -175,7 +175,7 @@ export const series: Series = {
       title: 'Episode 15',
       subtitle: 'No turning back.',
       duration: '0:44',
-      thumbnail: episode10Thumb,
+      thumbnail: episode15Thumb,
       streamId: 'b0117591239d41c89320cbf04821dcbe',
     },
     {
@@ -184,7 +184,7 @@ export const series: Series = {
       title: 'Episode 16',
       subtitle: 'The darkness speaks.',
       duration: '0:39',
-      thumbnail: episode10Thumb,
+      thumbnail: episode16Thumb,
       streamId: 'd8451b89ca5557f76c7937be02d8ae06',
     },
     {
@@ -193,7 +193,7 @@ export const series: Series = {
       title: 'Episode 17',
       subtitle: 'Almost over.',
       duration: '0:41',
-      thumbnail: episode10Thumb,
+      thumbnail: episode17Thumb,
       streamId: '4fbcaf05eedd262227c725984602cf85',
     },
     {
@@ -202,7 +202,7 @@ export const series: Series = {
       title: 'Episode 18',
       subtitle: 'The end is just the beginning.',
       duration: '0:45',
-      thumbnail: episode10Thumb,
+      thumbnail: episode18Thumb,
       streamId: '4d9c3ecdab2b4e1dc9301aa022ccf0ca',
     },
   ],
