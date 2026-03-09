@@ -28,6 +28,14 @@ import episode7Thumb from '@/assets/episode-7.jpg';
 import episode8Thumb from '@/assets/episode-8.jpg';
 import episode9Thumb from '@/assets/episode-9.jpg';
 import episode10Thumb from '@/assets/episode-10.jpg';
+import episode11Thumb from '@/assets/episode-11.jpg';
+import episode12Thumb from '@/assets/episode-12.jpg';
+import episode13Thumb from '@/assets/episode-13.jpg';
+import episode14Thumb from '@/assets/episode-14.jpg';
+import episode15Thumb from '@/assets/episode-15.jpg';
+import episode16Thumb from '@/assets/episode-16.jpg';
+import episode17Thumb from '@/assets/episode-17.jpg';
+import episode18Thumb from '@/assets/episode-18.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
