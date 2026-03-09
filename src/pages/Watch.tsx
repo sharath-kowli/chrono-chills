@@ -125,7 +125,7 @@ const Watch = () => {
         playerRef.current = null;
       }
     };
-  }, [episode, nextEpisode]);
+  }, [episode, nextEpisode, progress]);
 
   // Reset state when episode changes
   useEffect(() => {
