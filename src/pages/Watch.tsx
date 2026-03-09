@@ -204,11 +204,11 @@ const Watch = () => {
   return (
     <div className="fixed inset-0 bg-background">
       {/* Back button overlay */}
-      <header className="fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
+      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
         <div className="flex h-14 items-center px-4">
           <Link
             to="/"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
+            className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
@@ -220,7 +220,7 @@ const Watch = () => {
         <div id="youtube-player" className="h-full w-full" />
 
         {/* Episode info overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
           <div className="flex items-end justify-between">
             <div className="pointer-events-none">
               <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
@@ -239,7 +239,7 @@ const Watch = () => {
                     }
                   );
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
               >
                 {isBookmarked ? (
                   <BookmarkMinus className="h-5 w-5 text-primary" />
