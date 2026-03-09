@@ -89,6 +89,7 @@ const Watch = () => {
           autoplay: 1,
           rel: 0,
           modestbranding: 1,
+          start: progress?.timestamp && !progress?.completed ? Math.max(0, progress.timestamp - 1) : undefined,
         },
         events: {
           onStateChange: (event: any) => {
