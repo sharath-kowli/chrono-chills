@@ -220,7 +220,7 @@ const Watch = () => {
         <div id="youtube-player" className="h-full w-full" />
 
         {/* Episode info overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
           <div className="flex items-end justify-between">
             <div className="pointer-events-none">
               <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
