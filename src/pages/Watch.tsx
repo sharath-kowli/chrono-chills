@@ -204,11 +204,11 @@ const Watch = () => {
   return (
     <div className="fixed inset-0 bg-background">
       {/* Back button overlay */}
-      <header className="fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
+      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
         <div className="flex h-14 items-center px-4">
           <Link
             to="/"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
+            className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
