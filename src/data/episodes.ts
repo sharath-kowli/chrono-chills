@@ -5,7 +5,7 @@ export interface Episode {
   subtitle: string;
   duration: string;
   thumbnail: string;
-  youtubeId: string; // Placeholder - replace with actual unlisted YouTube IDs
+  streamId: string;
   isNew?: boolean;
   isLocked?: boolean;
 }
@@ -41,7 +41,7 @@ export const series: Series = {
       subtitle: 'It started with footsteps.',
       duration: '0:38',
       thumbnail: episode1Thumb,
-      youtubeId: 'Hk0QL6w7WdU',
+      streamId: 'c69cf60b260460f73325843ba825cbf1',
       isNew: true,
     },
     {
@@ -51,16 +51,16 @@ export const series: Series = {
       subtitle: 'The corner of your eye never lies.',
       duration: '0:32',
       thumbnail: episode2Thumb,
-      youtubeId: 'OnG0wHQ3KsM',
+      streamId: 'c145d7980bd0f0a588593d3d1d410db4',
     },
     {
       id: 'ep-3',
       number: 3,
       title: 'The Hand',
-      subtitle: 'They\'re listening through the wires.',
+      subtitle: "They're listening through the wires.",
       duration: '0:41',
       thumbnail: episode3Thumb,
-      youtubeId: 'UEL9Y3wCH50',
+      streamId: '64ad652bdf77d941144ae6003d6f1fb4',
     },
     {
       id: 'ep-4',
@@ -69,7 +69,7 @@ export const series: Series = {
       subtitle: 'Some doors should stay closed.',
       duration: '0:35',
       thumbnail: episode4Thumb,
-      youtubeId: 'rkrPt5vUSvk',
+      streamId: '90710073f69afa69c79167d633d4bd3d',
     },
     {
       id: 'ep-5',
@@ -78,7 +78,7 @@ export const series: Series = {
       subtitle: 'The nightmare continues.',
       duration: '0:40',
       thumbnail: episode5Thumb,
-      youtubeId: 'WoZyTFyUHas',
+      streamId: 'a1f76b8264ac7f16ddb924202f9c9bd6',
     },
     {
       id: 'ep-6',
@@ -87,7 +87,7 @@ export const series: Series = {
       subtitle: 'There is no escape.',
       duration: '0:45',
       thumbnail: episode6Thumb,
-      youtubeId: 'K-fELkj0EPY',
+      streamId: '80a5e07b1458530c122519c4f0d44109',
     },
     {
       id: 'ep-7',
@@ -96,7 +96,7 @@ export const series: Series = {
       subtitle: 'It remembers you.',
       duration: '0:42',
       thumbnail: episode7Thumb,
-      youtubeId: '1HCv_TVLm4k',
+      streamId: '0ba286f71e64c79b86082291df709d31',
     },
     {
       id: 'ep-8',
@@ -105,7 +105,7 @@ export const series: Series = {
       subtitle: 'You were never alone.',
       duration: '0:38',
       thumbnail: episode8Thumb,
-      youtubeId: 'Q3x1NUEIf-I',
+      streamId: '571080544617f967ff6bc2256449470f',
     },
     {
       id: 'ep-9',
@@ -114,7 +114,7 @@ export const series: Series = {
       subtitle: 'The signal returns.',
       duration: '0:36',
       thumbnail: episode9Thumb,
-      youtubeId: 'svMRhBFejI8',
+      streamId: 'aa26625d9c08b811c37b134700770de6',
     },
     {
       id: 'ep-10',
@@ -123,7 +123,79 @@ export const series: Series = {
       subtitle: 'It never ended.',
       duration: '0:34',
       thumbnail: episode10Thumb,
-      youtubeId: 'tfzYnnhmDoQ',
+      streamId: '068d014aafd0d6f2a3f3395e70cc70ae',
+    },
+    {
+      id: 'ep-11',
+      number: 11,
+      title: 'Episode 11',
+      subtitle: 'The walls have eyes.',
+      duration: '0:40',
+      thumbnail: episode10Thumb,
+      streamId: 'b55d4334bb431ab2706d3dd96d45e027',
+    },
+    {
+      id: 'ep-12',
+      number: 12,
+      title: 'Episode 12',
+      subtitle: 'Nowhere to hide.',
+      duration: '0:38',
+      thumbnail: episode10Thumb,
+      streamId: 'd2b5377041c7ec31ea15ebf9651cdc1f',
+    },
+    {
+      id: 'ep-13',
+      number: 13,
+      title: 'Episode 13',
+      subtitle: 'It follows.',
+      duration: '0:42',
+      thumbnail: episode10Thumb,
+      streamId: '6ab03e4790118f990aa837c53bceaa26',
+    },
+    {
+      id: 'ep-14',
+      number: 14,
+      title: 'Episode 14',
+      subtitle: 'The last warning.',
+      duration: '0:36',
+      thumbnail: episode10Thumb,
+      streamId: '8f90595c10387f4cf9923c53595f5fbe',
+    },
+    {
+      id: 'ep-15',
+      number: 15,
+      title: 'Episode 15',
+      subtitle: 'No turning back.',
+      duration: '0:44',
+      thumbnail: episode10Thumb,
+      streamId: 'b0117591239d41c89320cbf04821dcbe',
+    },
+    {
+      id: 'ep-16',
+      number: 16,
+      title: 'Episode 16',
+      subtitle: 'The darkness speaks.',
+      duration: '0:39',
+      thumbnail: episode10Thumb,
+      streamId: 'd8451b89ca5557f76c7937be02d8ae06',
+    },
+    {
+      id: 'ep-17',
+      number: 17,
+      title: 'Episode 17',
+      subtitle: 'Almost over.',
+      duration: '0:41',
+      thumbnail: episode10Thumb,
+      streamId: '4fbcaf05eedd262227c725984602cf85',
+    },
+    {
+      id: 'ep-18',
+      number: 18,
+      title: 'Episode 18',
+      subtitle: 'The end is just the beginning.',
+      duration: '0:45',
+      thumbnail: episode10Thumb,
+      streamId: '4d9c3ecdab2b4e1dc9301aa022ccf0ca',
     },
   ],
 };

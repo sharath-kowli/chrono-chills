@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Lock } from "lucide-react";
+import { ArrowLeft, Play, Lock, BookmarkPlus, BookmarkMinus } from "lucide-react";
 import { series } from "@/data/episodes";
 import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
@@ -7,25 +7,18 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { isPremiumUnlocked } from "@/lib/unlock";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
-import { BookmarkPlus, BookmarkMinus } from "lucide-react";
 import { toast } from "sonner";
-
-declare global {
-  interface Window {
-    YT: any;
-    onYouTubeIframeAPIReady: () => void;
-  }
-}
 
 const Watch = () => {
   const { episodeId } = useParams<{ episodeId: string }>();
   const navigate = useNavigate();
-  const playerRef = useRef<any>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showNextPrompt, setShowNextPrompt] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const [session, setSession] = useState<any>(null);
+  const progressInitialized = useRef(false);
 
   // User Data Hooks
   const { data: progress } = useEpisodeProgress(episodeId || "");
@@ -33,7 +26,6 @@ const Watch = () => {
   const { data: isBookmarked } = useIsBookmarked(episodeId || "");
   const { mutate: toggleBookmark } = useToggleBookmark();
 
-  // Check auth session early
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
   }, []);
@@ -44,15 +36,12 @@ const Watch = () => {
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
-  // Check if next episode is locked (Episode 10), unless already unlocked
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 10;
   const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked();
 
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
-
     if (isNextEpisodeLocked) {
-      // Stop countdown and show paywall
       if (countdownRef.current) {
         clearInterval(countdownRef.current);
         countdownRef.current = null;
@@ -64,84 +53,74 @@ const Watch = () => {
     }
   }, [nextEpisode, navigate, isNextEpisodeLocked]);
 
-  // Load YouTube IFrame API
-  useEffect(() => {
-    if (!window.YT) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+  // Build the Stream iframe URL with resume support
+  const getStreamUrl = useCallback(() => {
+    if (!episode) return "";
+    const base = `https://iframe.videodelivery.net/${episode.streamId}`;
+    const params = new URLSearchParams({
+      autoplay: "true",
+      muted: "false",
+    });
+    // Resume from saved position (1 second before)
+    if (progress?.timestamp && !progress?.completed && !progressInitialized.current) {
+      const startTime = Math.max(0, progress.timestamp - 1);
+      params.set("startTime", startTime.toString());
+      progressInitialized.current = true;
     }
-  }, []);
-
-  // Initialize player when API is ready
-  useEffect(() => {
-    if (!episode) return;
-
-    const initPlayer = () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-
-      playerRef.current = new window.YT.Player("youtube-player", {
-        videoId: episode.youtubeId,
-        playerVars: {
-          autoplay: 1,
-          rel: 0,
-          modestbranding: 1,
-          start: progress?.timestamp && !progress?.completed ? Math.max(0, progress.timestamp - 1) : undefined,
-        },
-        events: {
-          onStateChange: (event: any) => {
-            // Video ended (state = 0)
-            if (event.data === 0) {
-              console.log("Analytics: episode_completed", {
-                episodeId: episode.id,
-                episodeNumber: episode.number,
-                title: episode.title,
-                timestamp: new Date().toISOString(),
-              });
-              // Mark as completed
-              updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
-              if (nextEpisode) {
-                setShowNextPrompt(true);
-                setCountdown(5);
-              }
-            }
-          },
-        },
-      });
-    };
-
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
-
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-    };
-  }, [episode, nextEpisode, progress]);
+    return `${base}?${params.toString()}`;
+  }, [episode, progress]);
 
   // Reset state when episode changes
   useEffect(() => {
     setShowNextPrompt(false);
     setShowPaywall(false);
     setCountdown(5);
+    progressInitialized.current = false;
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
   }, [episodeId]);
 
+  // Listen for Stream player events via postMessage
+  useEffect(() => {
+    if (!episode) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      // Cloudflare Stream iframe sends events via postMessage
+      if (event.data && typeof event.data === "string") {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "ended" || data.event === "ended") {
+            console.log("Analytics: episode_completed", {
+              episodeId: episode.id,
+              episodeNumber: episode.number,
+              title: episode.title,
+              timestamp: new Date().toISOString(),
+            });
+            updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+            if (nextEpisode) {
+              setShowNextPrompt(true);
+              setCountdown(5);
+            }
+          }
+          // Track current time for progress
+          if ((data.type === "timeupdate" || data.event === "timeupdate") && data.currentTime && session) {
+            // We'll handle periodic saves separately
+          }
+        } catch {
+          // Not a JSON message, ignore
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [episode, nextEpisode, session, updateProgress]);
+
   // Countdown timer for auto-play
   useEffect(() => {
     if (!showNextPrompt) return;
-
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -149,14 +128,12 @@ const Watch = () => {
             clearInterval(countdownRef.current);
             countdownRef.current = null;
           }
-          // Use setTimeout to avoid setState during render
           setTimeout(() => goToNextEpisode(), 0);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-
     return () => {
       if (countdownRef.current) {
         clearInterval(countdownRef.current);
@@ -165,7 +142,7 @@ const Watch = () => {
     };
   }, [showNextPrompt, goToNextEpisode]);
 
-  // Track episode view and save progress periodically
+  // Track episode view
   useEffect(() => {
     if (!episode) return;
     console.log("Analytics: episode_started", {
@@ -174,19 +151,7 @@ const Watch = () => {
       title: episode.title,
       timestamp: new Date().toISOString(),
     });
-
-    // Save progress every 10 seconds
-    const progressInterval = setInterval(() => {
-      if (playerRef.current?.getCurrentTime && session) {
-        const currentTime = playerRef.current.getCurrentTime();
-        if (currentTime > 0) {
-          updateProgress({ episodeId: episode.id, timestamp: currentTime });
-        }
-      }
-    }, 10000);
-
-    return () => clearInterval(progressInterval);
-  }, [episode, session, updateProgress]);
+  }, [episode]);
 
   if (!episode) {
     return (
@@ -217,12 +182,18 @@ const Watch = () => {
 
       {/* Full viewport video player */}
       <div className="vhs-lines relative h-full w-full bg-background">
-        <div id="youtube-player" className="h-full w-full" />
+        <iframe
+          ref={iframeRef}
+          src={getStreamUrl()}
+          className="h-full w-full"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
 
         {/* Episode info overlay at bottom */}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
           <div className="flex items-end justify-between">
-            <div className="pointer-events-none">
+            <div>
               <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
               <h1 className="font-display text-xl tracking-wide text-foreground">{episode.title}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{episode.subtitle}</p>
@@ -258,8 +229,6 @@ const Watch = () => {
               <p className="mb-2 text-sm text-muted-foreground">Up Next</p>
               <h3 className="font-display text-2xl tracking-wide text-foreground">{nextEpisode.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{nextEpisode.subtitle}</p>
-
-              {/* Thumbnail preview */}
               <div className="relative mx-auto mt-4 aspect-[9/16] w-32 overflow-hidden rounded-lg">
                 <img src={nextEpisode.thumbnail} alt={nextEpisode.title} className="h-full w-full object-cover" />
                 {isNextEpisodeLocked && (
@@ -268,7 +237,6 @@ const Watch = () => {
                   </div>
                 )}
               </div>
-
               <Button onClick={goToNextEpisode} className="mt-6 gap-2 bg-primary px-8 py-6 text-lg hover:bg-primary/90">
                 {isNextEpisodeLocked ? (
                   <>
@@ -282,11 +250,9 @@ const Watch = () => {
                   </>
                 )}
               </Button>
-
               <p className="mt-3 text-sm text-muted-foreground">
                 {isNextEpisodeLocked ? "Premium content" : `Starting in ${countdown}...`}
               </p>
-
               <button
                 onClick={() => setShowNextPrompt(false)}
                 className="mt-4 text-sm text-muted-foreground hover:text-foreground"
