@@ -8,6 +8,7 @@ import { isPremiumUnlocked } from "@/lib/unlock";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { BookmarkPlus, BookmarkMinus } from "lucide-react";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
