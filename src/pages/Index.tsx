@@ -223,6 +223,8 @@ const Index = () => {
             <a href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
             <span>|</span>
             <a href="/refund" className="underline hover:text-foreground transition-colors">Refund Policy</a>
+            <span>|</span>
+            <a href="/about" className="underline hover:text-foreground transition-colors">About</a>
           </div>
         </div>
       </footer>
