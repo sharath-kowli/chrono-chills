@@ -208,11 +208,22 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="container px-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            © 2026 STATIC. All rights reserved. Some signals were never meant to be received.
-          </p>
+      <footer className="border-t border-border/50 py-12">
+        <div className="container px-4 flex flex-col items-center gap-4 text-center text-xs text-muted-foreground">
+          <p>© 2026 StarRiver B.V.</p>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground/70">StarRiver B.V.</p>
+            <p>Netherlands</p>
+            <p>KvK: 81709323</p>
+          </div>
+          <p>Contact: <a href="mailto:support@chronochills.com" className="underline hover:text-foreground transition-colors">support@chronochills.com</a></p>
+          <div className="flex gap-3">
+            <a href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</a>
+            <span>|</span>
+            <a href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
+            <span>|</span>
+            <a href="/refund" className="underline hover:text-foreground transition-colors">Refund Policy</a>
+          </div>
         </div>
       </footer>
     </div>
