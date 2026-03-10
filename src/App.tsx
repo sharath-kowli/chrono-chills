@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
+import About from "./pages/About";
 import Admin from "./pages/Admin";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 
