@@ -7,6 +7,9 @@ import Index from "./pages/Index";
 import Watch from "./pages/Watch";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Refund from "./pages/Refund";
 import Admin from "./pages/Admin";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 
@@ -23,6 +26,9 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/watch/:episodeId" element={<ProtectedRoute><Watch /></ProtectedRoute>} />
           <Route path="/d9x7k2m-panel" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/refund" element={<Refund />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
