@@ -85,7 +85,7 @@ const Watch = () => {
           player.currentTime = Math.max(0, progress.timestamp - 1);
         }
 
-        // Video ended → show next prompt
+        // Video ended → exit fullscreen first, then show next prompt
         player.addEventListener("ended", () => {
           console.log("Analytics: episode_completed", {
             episodeId: episode.id,
@@ -94,7 +94,19 @@ const Watch = () => {
             timestamp: new Date().toISOString(),
           });
           updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
-          if (nextEpisode) {
+          if (document.fullscreenElement) {
+            document.exitFullscreen().then(() => {
+              if (nextEpisode) {
+                setShowNextPrompt(true);
+                setCountdown(5);
+              }
+            }).catch(() => {
+              if (nextEpisode) {
+                setShowNextPrompt(true);
+                setCountdown(5);
+              }
+            });
+          } else if (nextEpisode) {
             setShowNextPrompt(true);
             setCountdown(5);
           }
