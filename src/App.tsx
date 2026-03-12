@@ -11,6 +11,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
 import About from "./pages/About";
+import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/refund" element={<Refund />} />
           <Route path="/about" element={<About />} />
+          <Route path="/pricing" element={<Pricing />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
