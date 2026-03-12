@@ -45,9 +45,9 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-4">
-          <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground hidden sm:inline-block">
-            Season 1
-          </span>
+          <Link to="/pricing" className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
+            Pricing
+          </Link>
           <div className="h-4 w-px bg-border hidden sm:block"></div>
 
           {session ? (
