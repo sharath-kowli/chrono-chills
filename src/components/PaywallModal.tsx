@@ -34,12 +34,13 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     const code = redeemCode.trim().toUpperCase();
     if (VALID_CODES.includes(code)) {
       console.log('Valid code redeemed:', code);
-      unlockPremium(); // Persist unlock state for all premium episodes
+      unlockPremium();
       setRedeemError('');
       setRedeemCode('');
       setShowRedeemInput(false);
       onUnlock?.();
       onOpenChange(false);
+      window.location.href = '/payment-success';
     } else {
       setRedeemError('Invalid code. Please try again.');
     }
