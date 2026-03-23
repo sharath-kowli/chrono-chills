@@ -36,6 +36,7 @@ import episode15Thumb from '@/assets/episode-15.jpg';
 import episode16Thumb from '@/assets/episode-16.jpg';
 import episode17Thumb from '@/assets/episode-17.jpg';
 import episode18Thumb from '@/assets/episode-18.jpg';
+import episode19Thumb from '@/assets/episode-19.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -50,7 +51,6 @@ export const series: Series = {
       duration: '0:38',
       thumbnail: episode1Thumb,
       streamId: 'c69cf60b260460f73325843ba825cbf1',
-      isNew: true,
     },
     {
       id: 'ep-2',
@@ -204,6 +204,17 @@ export const series: Series = {
       duration: '0:45',
       thumbnail: episode18Thumb,
       streamId: '4d9c3ecdab2b4e1dc9301aa022ccf0ca',
+    },
+    {
+      id: 'ep-19',
+      number: 19,
+      title: "The Cat's Tale",
+      subtitle: 'It watches from the dark.',
+      duration: '0:30',
+      thumbnail: episode19Thumb,
+      streamId: 'aeea7dcd27a7958e5dcd37b207dbca4f',
+      isNew: true,
+      isLocked: true,
     },
   ],
 };
