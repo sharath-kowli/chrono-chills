@@ -18,7 +18,7 @@ export function CookieConsent() {
     localStorage.setItem("cookie-consent", "declined");
     setVisible(false);
     // Disable GTM by removing dataLayer
-    window.dataLayer = [];
+    (window as any).dataLayer = [];
   };
 
   if (!visible) return null;
