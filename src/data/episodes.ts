@@ -51,7 +51,6 @@ export const series: Series = {
       duration: '0:38',
       thumbnail: episode1Thumb,
       streamId: 'c69cf60b260460f73325843ba825cbf1',
-      isNew: true,
     },
     {
       id: 'ep-2',
