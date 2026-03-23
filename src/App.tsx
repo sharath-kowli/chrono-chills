@@ -14,6 +14,7 @@ import Refund from "./pages/Refund";
 import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 
