@@ -14,6 +14,7 @@ import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
+import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/watch/:episodeId" element={<ProtectedRoute><Watch /></ProtectedRoute>} />
+          <Route path="/watch/:episodeId" element={<ConditionalProtectedRoute><Watch /></ConditionalProtectedRoute>} />
           <Route path="/d9x7k2m-panel" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
