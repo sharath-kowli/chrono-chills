@@ -206,5 +206,16 @@ export const series: Series = {
       thumbnail: episode18Thumb,
       streamId: '4d9c3ecdab2b4e1dc9301aa022ccf0ca',
     },
+    {
+      id: 'ep-19',
+      number: 19,
+      title: "The Cat's Tale",
+      subtitle: 'It watches from the dark.',
+      duration: '0:30',
+      thumbnail: episode19Thumb,
+      streamId: 'aeea7dcd27a7958e5dcd37b207dbca4f',
+      isNew: true,
+      isLocked: true,
+    },
   ],
 };
