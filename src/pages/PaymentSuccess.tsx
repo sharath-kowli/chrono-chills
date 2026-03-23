@@ -1,22 +1,29 @@
 import { Header } from "@/components/Header";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isPremiumUnlocked } from "@/lib/unlock";
 
-const PaymentSuccess = () => (
-  <div className="min-h-screen bg-background">
-    <Header />
-    <main className="container flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
-      <CheckCircle className="h-16 w-16 text-primary mb-6" />
-      <h1 className="font-display text-4xl tracking-wide text-foreground mb-3">You're In</h1>
-      <p className="text-muted-foreground max-w-md mb-8">
-        Premium content is now unlocked. Enjoy all episodes of STILL HERE.
-      </p>
-      <Button asChild size="lg">
-        <Link to="/">Start Watching</Link>
-      </Button>
-    </main>
-  </div>
-);
+const PaymentSuccess = () => {
+  if (!isPremiumUnlocked()) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
+        <CheckCircle className="h-16 w-16 text-primary mb-6" />
+        <h1 className="font-display text-4xl tracking-wide text-foreground mb-3">You're In</h1>
+        <p className="text-muted-foreground max-w-md mb-8">
+          Premium content is now unlocked. Enjoy all episodes of STILL HERE.
+        </p>
+        <Button asChild size="lg">
+          <Link to="/">Start Watching</Link>
+        </Button>
+      </main>
+    </div>
+  );
+};
 
 export default PaymentSuccess;
