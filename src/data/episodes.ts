@@ -37,6 +37,7 @@ import episode16Thumb from '@/assets/episode-16.jpg';
 import episode17Thumb from '@/assets/episode-17.jpg';
 import episode18Thumb from '@/assets/episode-18.jpg';
 import episode19Thumb from '@/assets/episode-19.jpg';
+import episode20Thumb from '@/assets/episode-20.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -213,6 +214,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode19Thumb,
       streamId: 'aeea7dcd27a7958e5dcd37b207dbca4f',
+      isLocked: true,
+    },
+    {
+      id: 'ep-20',
+      number: 20,
+      title: 'Here You Are',
+      subtitle: 'It found you.',
+      duration: '0:35',
+      thumbnail: episode20Thumb,
+      streamId: '37624cd1dbf9189955219a261e7e2015',
       isNew: true,
       isLocked: true,
     },
