@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { isPremiumUnlocked } from "@/lib/unlock";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
