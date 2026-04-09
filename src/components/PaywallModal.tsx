@@ -9,6 +9,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { unlockPremium } from '@/lib/unlock';
+import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PaywallModalProps {
   open: boolean;
@@ -17,23 +20,45 @@ interface PaywallModalProps {
   onUnlock?: () => void;
 }
 
-// Demo codes - in production this would validate against a backend
 const VALID_CODES = ['MERIROSVO1'];
 
 export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: PaywallModalProps) {
   const [showRedeemInput, setShowRedeemInput] = useState(false);
   const [redeemCode, setRedeemCode] = useState('');
   const [redeemError, setRedeemError] = useState('');
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const { checkSubscription } = useSubscription();
+  const { toast } = useToast();
 
-  const handleSubscribe = () => {
-    console.log('Subscribe clicked - would trigger Stripe checkout');
-    alert('This is a demo paywall. In production, this would open Stripe checkout.');
+  const handleSubscribe = async () => {
+    setIsCheckoutLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        // Redirect to auth if not logged in
+        window.location.href = '/auth';
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message || 'Failed to start checkout',
+      });
+    } finally {
+      setIsCheckoutLoading(false);
+    }
   };
 
   const handleRedeem = () => {
     const code = redeemCode.trim().toUpperCase();
     if (VALID_CODES.includes(code)) {
-      console.log('Valid code redeemed:', code);
       unlockPremium();
       setRedeemError('');
       setRedeemCode('');
@@ -72,7 +97,6 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
             <span className="font-semibold text-foreground">"{episodeTitle}"</span> and all future episodes are available with STATIC Premium.
           </p>
           
-          {/* Pricing card */}
           <div className="rounded-lg border border-primary/50 bg-primary/10 p-6">
             <div className="text-center">
               <span className="text-4xl font-bold text-foreground">$1.99</span>
@@ -83,7 +107,6 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
             </p>
           </div>
           
-          {/* Benefits */}
           <ul className="space-y-3">
             <li className="flex items-center gap-3 text-sm text-foreground">
               <Zap className="h-4 w-4 text-primary" />
@@ -99,15 +122,14 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
             </li>
           </ul>
           
-          {/* CTA */}
           <Button 
             onClick={handleSubscribe}
+            disabled={isCheckoutLoading}
             className="w-full bg-primary py-6 text-lg font-semibold hover:bg-primary/90"
           >
-            Start Watching Now
+            {isCheckoutLoading ? 'Loading...' : 'Start Watching Now'}
           </Button>
           
-          {/* Redeem Code Section */}
           <div className="border-t border-border pt-4">
             {!showRedeemInput ? (
               <button
