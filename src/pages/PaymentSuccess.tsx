@@ -3,10 +3,30 @@ import { Link, Navigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isPremiumUnlocked } from "@/lib/unlock";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useEffect } from "react";
 
 const PaymentSuccess = () => {
-  if (!isPremiumUnlocked()) {
+  const { subscribed, checkSubscription, loading } = useSubscription();
+
+  // Re-check subscription on mount (user just came back from Stripe)
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
+  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
+  const hasAccess = isPremiumUnlocked() || subscribed;
+
+  if (!loading && !hasAccess) {
     return <Navigate to="/" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <span className="animate-pulse text-primary">Verifying payment...</span>
+      </div>
+    );
   }
 
   return (
