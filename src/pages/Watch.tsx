@@ -226,7 +226,7 @@ const Watch = () => {
             {nextEpisode && (
               <button
                 onClick={() => {
-                  if (nextEpisode.number >= 10 && !isPremiumUnlocked()) {
+                  if (nextEpisode.number >= 10 && !isPremiumUnlocked() && !subscribed) {
                     setShowPaywall(true);
                   } else {
                     navigate(`/watch/${nextEpisode.id}`);
