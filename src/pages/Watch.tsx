@@ -40,7 +40,7 @@ const Watch = () => {
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 10;
-  const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked();
+  const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked() && !subscribed;
 
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
