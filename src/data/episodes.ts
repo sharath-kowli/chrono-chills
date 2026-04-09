@@ -38,6 +38,11 @@ import episode17Thumb from '@/assets/episode-17.jpg';
 import episode18Thumb from '@/assets/episode-18.jpg';
 import episode19Thumb from '@/assets/episode-19.jpg';
 import episode20Thumb from '@/assets/episode-20.jpg';
+import episode21Thumb from '@/assets/episode-21.jpg';
+import episode22Thumb from '@/assets/episode-22.jpg';
+import episode23Thumb from '@/assets/episode-23.jpg';
+import episode24Thumb from '@/assets/episode-24.jpg';
+import episode25Thumb from '@/assets/episode-25.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -224,6 +229,56 @@ export const series: Series = {
       duration: '0:35',
       thumbnail: episode20Thumb,
       streamId: '37624cd1dbf9189955219a261e7e2015',
+      isLocked: true,
+    },
+    {
+      id: 'ep-21',
+      number: 21,
+      title: 'Things Left Behind',
+      subtitle: 'Some things refuse to be forgotten.',
+      duration: '0:35',
+      thumbnail: episode21Thumb,
+      streamId: '9ce9cc49492a45018ec7c74ab3d0ab7b',
+      isLocked: true,
+    },
+    {
+      id: 'ep-22',
+      number: 22,
+      title: "What Doesn't Kill You",
+      subtitle: 'It only makes it stronger.',
+      duration: '0:35',
+      thumbnail: episode22Thumb,
+      streamId: '2f24a47c7c472ae3e20ce4b1f2116b50',
+      isLocked: true,
+    },
+    {
+      id: 'ep-23',
+      number: 23,
+      title: 'Family Ties',
+      subtitle: 'Blood runs deeper than you think.',
+      duration: '0:35',
+      thumbnail: episode23Thumb,
+      streamId: '135b11300df13e10a12314bafe79de1f',
+      isLocked: true,
+    },
+    {
+      id: 'ep-24',
+      number: 24,
+      title: 'Powerless',
+      subtitle: 'The lights go out for good.',
+      duration: '0:35',
+      thumbnail: episode24Thumb,
+      streamId: 'd9a9bf144341b84414a2008073966fcf',
+      isLocked: true,
+    },
+    {
+      id: 'ep-25',
+      number: 25,
+      title: 'Simulation Over',
+      subtitle: 'Was any of it real?',
+      duration: '0:35',
+      thumbnail: episode25Thumb,
+      streamId: 'eaf75324c21dd4bca6231b87e4fec03e',
       isNew: true,
       isLocked: true,
     },
