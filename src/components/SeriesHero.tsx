@@ -1,4 +1,6 @@
 import type { Series } from '@/data/episodes';
+import seriesBanner from '@/assets/series-banner.png';
+import stillHereLogo from '@/assets/still-here-logo.png';
 
 interface SeriesHeroProps {
   series: Series;
@@ -6,14 +8,24 @@ interface SeriesHeroProps {
 
 export function SeriesHero({ series }: SeriesHeroProps) {
   return (
-    <section className="relative overflow-hidden py-20 pt-32">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-      
-      {/* Static noise overlay */}
-      <div className="static-noise absolute inset-0" />
-      
-      <div className="container relative px-4">
+    <section className="relative overflow-hidden pt-16">
+      {/* Banner image background */}
+      <div className="relative h-[280px] sm:h-[340px] md:h-[400px] w-full">
+        <img
+          src={seriesBanner}
+          alt={series.title}
+          className="h-full w-full object-cover object-top"
+        />
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80" />
+
+        {/* Static noise overlay */}
+        <div className="static-noise absolute inset-0 opacity-30" />
+      </div>
+
+      {/* Content overlaid at the bottom of the banner */}
+      <div className="container relative -mt-32 px-4 pb-6 z-10">
         <div className="max-w-2xl">
           {/* Series badge */}
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1">
@@ -22,20 +34,19 @@ export function SeriesHero({ series }: SeriesHeroProps) {
               Now Streaming
             </span>
           </div>
-          
-          {/* Title */}
-          <h1 
-            className="glitch font-display text-6xl tracking-wider text-foreground md:text-8xl"
-            data-text={series.title}
-          >
-            {series.title}
-          </h1>
-          
+
+          {/* Logo image as title */}
+          <img
+            src={stillHereLogo}
+            alt={series.title}
+            className="h-16 sm:h-20 md:h-24 w-auto invert brightness-200"
+          />
+
           {/* Tagline */}
           <p className="mt-4 text-lg text-muted-foreground md:text-xl">
             {series.tagline}
           </p>
-          
+
           {/* Episode count */}
           <div className="mt-6 flex items-center gap-6">
             <div className="flex items-center gap-2">
