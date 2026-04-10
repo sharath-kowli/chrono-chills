@@ -178,7 +178,7 @@ const Watch = () => {
     };
   }, [showNextPrompt, goToNextEpisode]);
 
-  // Track episode view
+  // Track episode view + milestone events
   useEffect(() => {
     if (!episode) return;
     console.log("Analytics: episode_started", {
@@ -194,6 +194,27 @@ const Watch = () => {
       episode_number: episode.number,
       episode_title: episode.title,
     });
+
+    // Track unique episodes watched in sessionStorage and fire milestone events
+    const storageKey = "unique_episodes_watched";
+    const watched: string[] = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
+    if (!watched.includes(episode.id)) {
+      watched.push(episode.id);
+      sessionStorage.setItem(storageKey, JSON.stringify(watched));
+    }
+    const count = watched.length;
+    if (count === 2) {
+      (window as any).dataLayer.push({
+        event: "milestone_2_episodes",
+        unique_episodes_count: count,
+      });
+    }
+    if (count === 10) {
+      (window as any).dataLayer.push({
+        event: "milestone_10_episodes",
+        unique_episodes_count: count,
+      });
+    }
   }, [episode]);
 
   if (!episode) {
