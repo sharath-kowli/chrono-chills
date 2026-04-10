@@ -47,7 +47,7 @@ import episode25Thumb from '@/assets/episode-25.jpg';
 export const series: Series = {
   id: 'still-here-season-1',
   title: 'STILL HERE',
-  tagline: 'Some things never leave.',
+  tagline: 'Hell is full. We\'re still here.',
   episodes: [
     {
       id: 'ep-1',
