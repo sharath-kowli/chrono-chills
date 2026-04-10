@@ -9,13 +9,24 @@ import { useEffect } from "react";
 const PaymentSuccess = () => {
   const { subscribed, checkSubscription, loading } = useSubscription();
 
+  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
+  const hasAccess = isPremiumUnlocked() || subscribed;
+
   // Re-check subscription on mount (user just came back from Stripe)
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
 
-  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
-  const hasAccess = isPremiumUnlocked() || subscribed;
+  // Fire payment_success event for GTM
+  useEffect(() => {
+    if (!loading && hasAccess) {
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: "payment_success",
+        payment_method: isPremiumUnlocked() ? "redeem_code" : "stripe",
+      });
+    }
+  }, [loading, hasAccess]);
 
   if (!loading && !hasAccess) {
     return <Navigate to="/" replace />;
