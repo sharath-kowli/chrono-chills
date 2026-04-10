@@ -195,25 +195,31 @@ const Watch = () => {
       episode_title: episode.title,
     });
 
-    // Track unique episodes watched in sessionStorage and fire milestone events
+    // Track unique episodes watched in localStorage and fire milestone events (once per user ever)
     const storageKey = "unique_episodes_watched";
-    const watched: string[] = JSON.parse(sessionStorage.getItem(storageKey) || "[]");
+    const firedKey = "milestone_events_fired";
+    const watched: string[] = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const fired: string[] = JSON.parse(localStorage.getItem(firedKey) || "[]");
     if (!watched.includes(episode.id)) {
       watched.push(episode.id);
-      sessionStorage.setItem(storageKey, JSON.stringify(watched));
+      localStorage.setItem(storageKey, JSON.stringify(watched));
     }
     const count = watched.length;
-    if (count === 2) {
+    if (count >= 2 && !fired.includes("2")) {
       (window as any).dataLayer.push({
         event: "milestone_2_episodes",
         unique_episodes_count: count,
       });
+      fired.push("2");
+      localStorage.setItem(firedKey, JSON.stringify(fired));
     }
-    if (count === 10) {
+    if (count >= 10 && !fired.includes("10")) {
       (window as any).dataLayer.push({
         event: "milestone_10_episodes",
         unique_episodes_count: count,
       });
+      fired.push("10");
+      localStorage.setItem(firedKey, JSON.stringify(fired));
     }
   }, [episode]);
 
