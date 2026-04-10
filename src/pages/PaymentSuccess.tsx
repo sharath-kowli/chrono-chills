@@ -9,6 +9,9 @@ import { useEffect } from "react";
 const PaymentSuccess = () => {
   const { subscribed, checkSubscription, loading } = useSubscription();
 
+  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
+  const hasAccess = isPremiumUnlocked() || subscribed;
+
   // Re-check subscription on mount (user just came back from Stripe)
   useEffect(() => {
     checkSubscription();
@@ -24,9 +27,6 @@ const PaymentSuccess = () => {
       });
     }
   }, [loading, hasAccess]);
-
-  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
-  const hasAccess = isPremiumUnlocked() || subscribed;
 
   if (!loading && !hasAccess) {
     return <Navigate to="/" replace />;
