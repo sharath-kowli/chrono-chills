@@ -14,6 +14,17 @@ const PaymentSuccess = () => {
     checkSubscription();
   }, [checkSubscription]);
 
+  // Fire payment_success event for GTM
+  useEffect(() => {
+    if (!loading && hasAccess) {
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: "payment_success",
+        payment_method: isPremiumUnlocked() ? "redeem_code" : "stripe",
+      });
+    }
+  }, [loading, hasAccess]);
+
   // Allow access if either localStorage unlock (redeem code) or Stripe subscription
   const hasAccess = isPremiumUnlocked() || subscribed;
 

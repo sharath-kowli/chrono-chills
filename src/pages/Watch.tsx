@@ -95,6 +95,13 @@ const Watch = () => {
             title: episode.title,
             timestamp: new Date().toISOString(),
           });
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: "episode_completed",
+            episode_id: episode.id,
+            episode_number: episode.number,
+            episode_title: episode.title,
+          });
           updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
           if (document.fullscreenElement) {
             document.exitFullscreen().then(() => {
@@ -179,6 +186,13 @@ const Watch = () => {
       episodeNumber: episode.number,
       title: episode.title,
       timestamp: new Date().toISOString(),
+    });
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    (window as any).dataLayer.push({
+      event: "episode_started",
+      episode_id: episode.id,
+      episode_number: episode.number,
+      episode_title: episode.title,
     });
   }, [episode]);
 

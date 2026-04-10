@@ -19,8 +19,16 @@ const Auth = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        if (event === "SIGNED_IN") {
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: "sign_in",
+            method: "google",
+            user_id: session.user.id,
+          });
+        }
         navigate("/");
       }
     });
