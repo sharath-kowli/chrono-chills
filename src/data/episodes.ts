@@ -18,6 +18,7 @@ export interface Series {
 }
 
 // Import thumbnails
+import episode0Thumb from '@/assets/episode-0.jpg';
 import episode1Thumb from '@/assets/episode-1-still-here.jpg';
 import episode2Thumb from '@/assets/episode-2-it-moved.jpg';
 import episode3Thumb from '@/assets/episode-3-static.jpg';
@@ -50,6 +51,15 @@ export const series: Series = {
   title: 'STILL HERE',
   tagline: 'Hell is full. We\'re still here.',
   episodes: [
+    {
+      id: 'ep-0',
+      number: 0,
+      title: 'Lone and Dreary World',
+      subtitle: 'Getting through another day.',
+      duration: '1:16',
+      thumbnail: episode0Thumb,
+      streamId: '72ffbb035554bbd5347daa43ec85db20',
+    },
     {
       id: 'ep-1',
       number: 1,
