@@ -209,22 +209,51 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-12">
-        <div className="container px-4 flex flex-col items-center gap-4 text-center text-xs text-muted-foreground">
-          <p>© 2026 StarRiver B.V.</p>
-          <div className="space-y-1">
-            <p className="font-medium text-foreground/70">StarRiver B.V.</p>
-            <p>Netherlands</p>
-            <p>KvK: 81709323</p>
+        <div className="container px-4 flex flex-col items-center gap-6 text-center text-xs text-muted-foreground/60">
+          {/* Disclaimer */}
+          <div className="max-w-2xl space-y-3">
+            <h3 className="font-medium text-sm">Fictional Content, Genre & Likeness Disclaimer</h3>
+            <p className="leading-relaxed">
+              Chrono Chills is a fictional series created for entertainment purposes. The content falls within the genres of horror, science fiction, and fantasy, and may depict exaggerated, speculative, or supernatural scenarios that are not grounded in reality.
+            </p>
+            <p className="leading-relaxed">
+              All characters, names, storylines, and events are products of the creators' imagination.
+            </p>
+            <p className="leading-relaxed">
+              Any resemblance to real persons, living or dead, or to actual events, organizations, or locations is purely coincidental and unintended. No identification with actual individuals or entities is intended or should be inferred.
+            </p>
+            <p className="leading-relaxed font-medium">
+              No Defamation or Harm Intended
+            </p>
+            <p className="leading-relaxed">
+              The creators do not intend to harm, defame, or misrepresent any individual, group, or organization.
+            </p>
+            <p className="leading-relaxed font-medium">
+              Viewer Discretion
+            </p>
+            <p className="leading-relaxed">
+              This series may contain intense, disturbing, or psychologically unsettling themes. Viewer discretion is advised.
+            </p>
           </div>
-          <p>Contact: <a href="mailto:support@chronochills.com" className="underline hover:text-foreground transition-colors">support@chronochills.com</a></p>
-          <div className="flex gap-3">
-            <a href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</a>
-            <span>|</span>
-            <a href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
-            <span>|</span>
-            <a href="/refund" className="underline hover:text-foreground transition-colors">Refund Policy</a>
-            <span>|</span>
-            <a href="/about" className="underline hover:text-foreground transition-colors">About</a>
+
+          {/* Copyright & Company Info */}
+          <div className="border-t border-border/30 pt-6 space-y-4 w-full">
+            <p>© 2026 StarRiver B.V.</p>
+            <div className="space-y-1">
+              <p className="font-medium">StarRiver B.V.</p>
+              <p>Netherlands</p>
+              <p>KvK: 81709323</p>
+            </div>
+            <p>Contact: <a href="mailto:support@chronochills.com" className="underline hover:text-muted-foreground transition-colors">support@chronochills.com</a></p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <a href="/terms" className="underline hover:text-muted-foreground transition-colors">Terms of Service</a>
+              <span>|</span>
+              <a href="/privacy" className="underline hover:text-muted-foreground transition-colors">Privacy Policy</a>
+              <span>|</span>
+              <a href="/refund" className="underline hover:text-muted-foreground transition-colors">Refund Policy</a>
+              <span>|</span>
+              <a href="/about" className="underline hover:text-muted-foreground transition-colors">About</a>
+            </div>
           </div>
         </div>
       </footer>
