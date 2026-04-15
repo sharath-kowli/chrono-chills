@@ -18,6 +18,7 @@ export interface Series {
 }
 
 // Import thumbnails
+import episode0Thumb from '@/assets/episode-0.jpg';
 import episode1Thumb from '@/assets/episode-1-still-here.jpg';
 import episode2Thumb from '@/assets/episode-2-it-moved.jpg';
 import episode3Thumb from '@/assets/episode-3-static.jpg';
