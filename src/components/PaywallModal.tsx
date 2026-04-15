@@ -94,7 +94,7 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
         
         <div className="space-y-6 py-4">
           <p className="text-center text-muted-foreground">
-            <span className="font-semibold text-foreground">"{episodeTitle}"</span> and all future episodes are available with STATIC Premium.
+            <span className="font-semibold text-foreground">"{episodeTitle}"</span> and all future episodes are available with ChronoChills Premium.
           </p>
           
           <div className="rounded-lg border border-primary/50 bg-primary/10 p-6">

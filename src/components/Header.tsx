@@ -38,8 +38,8 @@ export function Header() {
               <Radio className="h-6 w-6 text-primary opacity-30" />
             </div>
           </div>
-          <span className="glitch font-display text-2xl tracking-widest text-foreground" data-text="STATIC">
-            STATIC
+          <span className="glitch font-display text-2xl tracking-widest text-foreground" data-text="CHRONOCHILLS">
+            CHRONOCHILLS
           </span>
         </Link>
 
