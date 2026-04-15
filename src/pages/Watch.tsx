@@ -10,6 +10,7 @@ import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleB
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGeoTracking } from "@/hooks/useGeoTracking";
+import { pushEvent } from "@/lib/gtm";
 
 const Watch = () => {
   const { subscribed } = useSubscription();
@@ -89,9 +90,7 @@ const Watch = () => {
             title: episode.title,
             timestamp: new Date().toISOString(),
           });
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          (window as any).dataLayer.push({
-            event: "episode_completed",
+          pushEvent("episode_completed", {
             episode_id: episode.id,
             episode_number: episode.number,
             episode_title: episode.title,
@@ -144,9 +143,7 @@ const Watch = () => {
       title: episode.title,
       timestamp: new Date().toISOString(),
     });
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({
-      event: "episode_started",
+    pushEvent("episode_started", {
       episode_id: episode.id,
       episode_number: episode.number,
       episode_title: episode.title,
@@ -163,16 +160,14 @@ const Watch = () => {
     }
     const count = watched.length;
     if (count >= 2 && !fired.includes("2")) {
-      (window as any).dataLayer.push({
-        event: "milestone_2_episodes",
+      pushEvent("milestone_2_episodes", {
         unique_episodes_count: count,
       });
       fired.push("2");
       localStorage.setItem(firedKey, JSON.stringify(fired));
     }
     if (count >= 10 && !fired.includes("10")) {
-      (window as any).dataLayer.push({
-        event: "milestone_10_episodes",
+      pushEvent("milestone_10_episodes", {
         unique_episodes_count: count,
       });
       fired.push("10");

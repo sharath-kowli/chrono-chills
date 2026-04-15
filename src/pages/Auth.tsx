@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { pushEvent } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -22,9 +23,7 @@ const Auth = () => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         if (event === "SIGNED_IN") {
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          (window as any).dataLayer.push({
-            event: "sign_in",
+          pushEvent("sign_in", {
             method: "google",
             user_id: session.user.id,
           });
