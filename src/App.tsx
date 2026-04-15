@@ -5,6 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
+import { PageViewTracker } from "@/components/PageViewTracker";
+import { initGeoData } from "@/lib/gtm";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Watch from "./pages/Watch";
 import Auth from "./pages/Auth";
@@ -21,7 +24,11 @@ import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedR
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  // Resolve country once per session on app boot
+  useEffect(() => { initGeoData(); }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <SubscriptionProvider>
@@ -29,6 +36,7 @@ const App = () => (
         <Sonner />
         <CookieConsent />
         <BrowserRouter>
+          <PageViewTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -47,6 +55,7 @@ const App = () => (
       </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

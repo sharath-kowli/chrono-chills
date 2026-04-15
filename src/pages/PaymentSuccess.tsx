@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { isPremiumUnlocked } from "@/lib/unlock";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEffect } from "react";
+import { pushEvent } from "@/lib/gtm";
 
 const PaymentSuccess = () => {
   const { subscribed, checkSubscription, loading } = useSubscription();
@@ -20,9 +21,7 @@ const PaymentSuccess = () => {
   // Fire payment_success event for GTM
   useEffect(() => {
     if (!loading && hasAccess) {
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({
-        event: "payment_success",
+      pushEvent("payment_success", {
         payment_method: isPremiumUnlocked() ? "redeem_code" : "stripe",
       });
     }
