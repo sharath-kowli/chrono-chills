@@ -52,6 +52,15 @@ export const series: Series = {
   tagline: 'Hell is full. We\'re still here.',
   episodes: [
     {
+      id: 'ep-0',
+      number: 0,
+      title: 'Lone and Dreary World',
+      subtitle: 'Getting through another day.',
+      duration: '1:16',
+      thumbnail: episode0Thumb,
+      streamId: '72ffbb035554bbd5347daa43ec85db20',
+    },
+    {
       id: 'ep-1',
       number: 1,
       title: 'World in Your Eyes',
