@@ -6,8 +6,10 @@ import { EpisodeCard } from "@/components/EpisodeCard";
 import { series } from "@/data/episodes";
 import { useWatchHistory, useBookmarks } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
+import { useGeoTracking } from "@/hooks/useGeoTracking";
 
 const Index = () => {
+  useGeoTracking("/");
   const scrollRef = useRef<HTMLDivElement>(null);
   const continueWatchingRef = useRef<HTMLDivElement>(null);
   const bookmarksRef = useRef<HTMLDivElement>(null);
