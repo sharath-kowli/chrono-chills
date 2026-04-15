@@ -37,6 +37,7 @@ const App = () => {
         <CookieConsent />
         <BrowserRouter>
           <PageViewTracker />
+          <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/watch/:episodeId" element={<ConditionalProtectedRoute><Watch /></ConditionalProtectedRoute>} />
