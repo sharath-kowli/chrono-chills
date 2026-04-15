@@ -131,8 +131,22 @@ Deno.serve(async (req) => {
       episode_name: episodeNames[b.episode_id] || b.episode_id,
     }));
 
+    // Fetch events (geo tracking)
+    const countryFilter = body?.countryFilter;
+    let eventsQuery = adminClient
+      .from("events")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (countryFilter && countryFilter !== "all") {
+      eventsQuery = eventsQuery.eq("country", countryFilter);
+    }
+
+    const { data: events } = await eventsQuery;
+
     return new Response(
-      JSON.stringify({ watchHistory: enriched, bookmarks: enrichedBookmarks }),
+      JSON.stringify({ watchHistory: enriched, bookmarks: enrichedBookmarks, events: events || [] }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

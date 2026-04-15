@@ -9,10 +9,12 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useGeoTracking } from "@/hooks/useGeoTracking";
 
 const Watch = () => {
   const { subscribed } = useSubscription();
   const { episodeId } = useParams<{ episodeId: string }>();
+  useGeoTracking(`/watch/${episodeId}`);
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
