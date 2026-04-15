@@ -43,6 +43,7 @@ import episode22Thumb from '@/assets/episode-22.jpg';
 import episode23Thumb from '@/assets/episode-23.jpg';
 import episode24Thumb from '@/assets/episode-24.jpg';
 import episode25Thumb from '@/assets/episode-25.jpg';
+import episode26Thumb from '@/assets/episode-26.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -279,6 +280,16 @@ export const series: Series = {
       duration: '0:35',
       thumbnail: episode25Thumb,
       streamId: 'eaf75324c21dd4bca6231b87e4fec03e',
+      isLocked: true,
+    },
+    {
+      id: 'ep-26',
+      number: 26,
+      title: 'An Act of Mercy',
+      subtitle: 'The cost of survival becomes unbearable.',
+      duration: '0:49',
+      thumbnail: episode26Thumb,
+      streamId: 'b2972edd0bfcccf09e6c773f8137780d',
       isNew: true,
       isLocked: true,
     },
