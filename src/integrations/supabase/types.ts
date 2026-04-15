@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          country: string
+          created_at: string
+          event_type: string
+          id: string
+          page: string
+          session_id: string
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          page: string
+          session_id: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          page?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
