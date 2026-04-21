@@ -12,6 +12,11 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+const PRICES = {
+  weekly: "price_1TKLJEHee1RUt7XKKBCj6dy5",
+  lifetime: "price_1TOkeGHee1RUt7XKc9HfvKo6",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,6 +29,11 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    const { plan = "weekly" } = await req.json().catch(() => ({}));
+    const priceId = PRICES[plan as keyof typeof PRICES];
+    if (!priceId) throw new Error(`Invalid plan: ${plan}`);
+    logStep("Plan selected", { plan, priceId });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -42,22 +52,18 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://chronochills.com";
+    const mode = plan === "lifetime" ? "payment" : "subscription";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: "price_1TKLJEHee1RUt7XKKBCj6dy5",
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode,
       success_url: `${origin}/payment-success`,
       cancel_url: `${origin}/pricing`,
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, mode });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -7,6 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const LIFETIME_PRICE_ID = "price_1TOkeGHee1RUt7XKc9HfvKo6";
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
@@ -44,7 +46,7 @@ serve(async (req) => {
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ subscribed: false, lifetime: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -53,6 +55,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -70,9 +73,29 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
+    // Check for lifetime purchase (completed checkout sessions with the lifetime price)
+    let hasLifetime = false;
+    const sessions = await stripe.checkout.sessions.list({
+      customer: customerId,
+      status: "complete",
+      limit: 100,
+    });
+
+    for (const session of sessions.data) {
+      if (session.mode === "payment") {
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+        if (lineItems.data.some((item: any) => item.price?.id === LIFETIME_PRICE_ID)) {
+          hasLifetime = true;
+          logStep("Lifetime purchase found", { sessionId: session.id });
+          break;
+        }
+      }
+    }
+
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      subscription_end: subscriptionEnd,
+      subscribed: hasActiveSub || hasLifetime,
+      lifetime: hasLifetime,
+      subscription_end: hasLifetime ? null : subscriptionEnd,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
