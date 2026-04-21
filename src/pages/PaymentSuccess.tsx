@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
-import { Link, Navigate } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { CheckCircle, Crown, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isPremiumUnlocked } from "@/lib/unlock";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -8,7 +8,12 @@ import { useEffect } from "react";
 import { pushEvent } from "@/lib/gtm";
 
 const PaymentSuccess = () => {
-  const { subscribed, checkSubscription, loading } = useSubscription();
+  const { subscribed, lifetime, checkSubscription, loading } = useSubscription();
+  const [searchParams] = useSearchParams();
+
+  // Detect plan from URL param (set by create-checkout success_url)
+  const planParam = searchParams.get("plan") as "weekly" | "lifetime" | null;
+  const isLifetime = lifetime || planParam === "lifetime";
 
   // Allow access if either localStorage unlock (redeem code) or Stripe subscription
   const hasAccess = isPremiumUnlocked() || subscribed;
@@ -21,11 +26,12 @@ const PaymentSuccess = () => {
   // Fire payment_success event for GTM
   useEffect(() => {
     if (!loading && hasAccess) {
-      pushEvent("payment_success", {
+      pushEvent("checkout_completed", {
         payment_method: isPremiumUnlocked() ? "redeem_code" : "stripe",
+        plan: isPremiumUnlocked() ? "redeem" : (isLifetime ? "lifetime" : "weekly"),
       });
     }
-  }, [loading, hasAccess]);
+  }, [loading, hasAccess, isLifetime]);
 
   if (!loading && !hasAccess) {
     return <Navigate to="/" replace />;
@@ -45,8 +51,26 @@ const PaymentSuccess = () => {
       <main className="container flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
         <CheckCircle className="h-16 w-16 text-primary mb-6" />
         <h1 className="font-display text-4xl tracking-wide text-foreground mb-3">You're In</h1>
+
+        {/* Plan badge */}
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+          {isLifetime ? (
+            <>
+              <Crown className="h-4 w-4" />
+              Lifetime Access
+            </>
+          ) : (
+            <>
+              <Zap className="h-4 w-4" />
+              Weekly Premium
+            </>
+          )}
+        </div>
+
         <p className="text-muted-foreground max-w-md mb-8">
-          Premium content is now unlocked. Enjoy all episodes of STILL HERE.
+          {isLifetime
+            ? "You now have lifetime access to all STILL HERE episodes. Enjoy!"
+            : "Premium content is now unlocked. Your subscription renews weekly — cancel anytime."}
         </p>
         <Button asChild size="lg">
           <Link to="/">Start Watching</Link>
