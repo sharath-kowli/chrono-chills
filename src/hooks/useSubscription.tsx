@@ -46,6 +46,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
 
       setSubscribed(data.subscribed ?? false);
+      setLifetime(data.lifetime ?? false);
       setSubscriptionEnd(data.subscription_end ?? null);
     } catch (err) {
       console.error("Subscription check failed:", err);
