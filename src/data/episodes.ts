@@ -45,6 +45,7 @@ import episode23Thumb from '@/assets/episode-23.jpg';
 import episode24Thumb from '@/assets/episode-24.jpg';
 import episode25Thumb from '@/assets/episode-25.jpg';
 import episode26Thumb from '@/assets/episode-26.jpg';
+import episode27Thumb from '@/assets/episode-27.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -300,6 +301,16 @@ export const series: Series = {
       duration: '0:49',
       thumbnail: episode26Thumb,
       streamId: 'b2972edd0bfcccf09e6c773f8137780d',
+      isLocked: true,
+    },
+    {
+      id: 'ep-27',
+      number: 27,
+      title: 'Ashes to Ashes',
+      subtitle: 'What remains when everything burns away.',
+      duration: '0:45',
+      thumbnail: episode27Thumb,
+      streamId: '274216508270b4a99db2e5af4a75b760',
       isNew: true,
       isLocked: true,
     },
