@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionState {
   subscribed: boolean;
+  lifetime: boolean;
   subscriptionEnd: string | null;
   loading: boolean;
   checkSubscription: () => Promise<void>;
@@ -10,6 +11,7 @@ interface SubscriptionState {
 
 const SubscriptionContext = createContext<SubscriptionState>({
   subscribed: false,
+  lifetime: false,
   subscriptionEnd: null,
   loading: true,
   checkSubscription: async () => {},
@@ -21,6 +23,7 @@ export function useSubscription() {
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscribed, setSubscribed] = useState(false);
+  const [lifetime, setLifetime] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,6 +32,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setSubscribed(false);
+        setLifetime(false);
         setSubscriptionEnd(null);
         setLoading(false);
         return;
@@ -42,6 +46,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
 
       setSubscribed(data.subscribed ?? false);
+      setLifetime(data.lifetime ?? false);
       setSubscriptionEnd(data.subscription_end ?? null);
     } catch (err) {
       console.error("Subscription check failed:", err);
@@ -68,7 +73,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [checkSubscription]);
 
   return (
-    <SubscriptionContext.Provider value={{ subscribed, subscriptionEnd, loading, checkSubscription }}>
+    <SubscriptionContext.Provider value={{ subscribed, lifetime, subscriptionEnd, loading, checkSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );
