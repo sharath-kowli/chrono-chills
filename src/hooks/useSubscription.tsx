@@ -40,7 +40,21 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) {
-        console.error("Error checking subscription:", error);
+        console.error("Edge function failed, falling back to entitlements table:", error);
+        // Fallback: query entitlements directly so paying users aren't locked out
+        const { data: entitlements } = await supabase
+          .from("entitlements")
+          .select("plan, status")
+          .eq("user_id", session.user.id)
+          .eq("status", "active");
+
+        if (entitlements && entitlements.length > 0) {
+          const hasLifetime = entitlements.some(e => e.plan === "lifetime");
+          const hasWeekly = entitlements.some(e => e.plan === "weekly");
+          setSubscribed(hasLifetime || hasWeekly);
+          setLifetime(hasLifetime);
+          setSubscriptionEnd(null);
+        }
         setLoading(false);
         return;
       }
