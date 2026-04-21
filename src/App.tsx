@@ -19,6 +19,7 @@ import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Install from "./pages/Install";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 
@@ -48,6 +49,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/install" element={<Install />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
