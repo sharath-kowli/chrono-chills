@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionState {
   subscribed: boolean;
+  lifetime: boolean;
   subscriptionEnd: string | null;
   loading: boolean;
   checkSubscription: () => Promise<void>;
@@ -10,6 +11,7 @@ interface SubscriptionState {
 
 const SubscriptionContext = createContext<SubscriptionState>({
   subscribed: false,
+  lifetime: false,
   subscriptionEnd: null,
   loading: true,
   checkSubscription: async () => {},
