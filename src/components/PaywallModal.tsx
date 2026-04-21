@@ -1,4 +1,4 @@
-import { Lock, Zap, Ticket } from 'lucide-react';
+import { Lock, Zap, Ticket, Crown } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,25 +22,29 @@ interface PaywallModalProps {
 
 const VALID_CODES = ['MERIROSVO1'];
 
+type PlanType = 'weekly' | 'lifetime';
+
 export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: PaywallModalProps) {
   const [showRedeemInput, setShowRedeemInput] = useState(false);
   const [redeemCode, setRedeemCode] = useState('');
   const [redeemError, setRedeemError] = useState('');
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('lifetime');
   const { checkSubscription } = useSubscription();
   const { toast } = useToast();
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (plan: PlanType) => {
     setIsCheckoutLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // Redirect to auth if not logged in
         window.location.href = '/auth';
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('create-checkout');
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { plan },
+      });
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, '_blank');
@@ -92,19 +96,55 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-5 py-4">
           <p className="text-center text-muted-foreground">
             <span className="font-semibold text-foreground">"{episodeTitle}"</span> and all future episodes are available with ChronoChills Premium.
           </p>
-          
-          <div className="rounded-lg border border-primary/50 bg-primary/10 p-6">
-            <div className="text-center">
-              <span className="text-4xl font-bold text-foreground">$1.99</span>
-              <span className="text-muted-foreground">/week</span>
-            </div>
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              Cancel anytime
-            </p>
+
+          {/* Plan selection */}
+          <div className="space-y-3">
+            {/* Lifetime option */}
+            <button
+              onClick={() => setSelectedPlan('lifetime')}
+              className={`w-full rounded-lg border p-4 text-left transition-all ${
+                selectedPlan === 'lifetime'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                  : 'border-border bg-background hover:border-muted-foreground/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  <span className="font-semibold text-foreground">Lifetime Access</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-foreground">$19.99</span>
+                  <span className="text-sm text-muted-foreground"> once</span>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Pay once, watch forever. Best value.</p>
+            </button>
+
+            {/* Weekly option */}
+            <button
+              onClick={() => setSelectedPlan('weekly')}
+              className={`w-full rounded-lg border p-4 text-left transition-all ${
+                selectedPlan === 'weekly'
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                  : 'border-border bg-background hover:border-muted-foreground/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-foreground">Weekly</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-foreground">$1.99</span>
+                  <span className="text-sm text-muted-foreground">/week</span>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Cancel anytime</p>
+            </button>
           </div>
           
           <ul className="space-y-3">
@@ -123,11 +163,15 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
           </ul>
           
           <Button 
-            onClick={handleSubscribe}
+            onClick={() => handleSubscribe(selectedPlan)}
             disabled={isCheckoutLoading}
             className="w-full bg-primary py-6 text-lg font-semibold hover:bg-primary/90"
           >
-            {isCheckoutLoading ? 'Loading...' : 'Start Watching Now'}
+            {isCheckoutLoading
+              ? 'Loading...'
+              : selectedPlan === 'lifetime'
+                ? 'Get Lifetime Access – $19.99'
+                : 'Start Watching – $1.99/week'}
           </Button>
           
           <div className="border-t border-border pt-4">
