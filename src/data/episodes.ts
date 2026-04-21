@@ -46,6 +46,7 @@ import episode24Thumb from '@/assets/episode-24.jpg';
 import episode25Thumb from '@/assets/episode-25.jpg';
 import episode26Thumb from '@/assets/episode-26.jpg';
 import episode27Thumb from '@/assets/episode-27.jpg';
+import episode28Thumb from '@/assets/episode-28.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -311,6 +312,16 @@ export const series: Series = {
       duration: '0:45',
       thumbnail: episode27Thumb,
       streamId: '274216508270b4a99db2e5af4a75b760',
+      isLocked: true,
+    },
+    {
+      id: 'ep-28',
+      number: 28,
+      title: 'Episode 28',
+      subtitle: 'The nightmare continues.',
+      duration: '0:45',
+      thumbnail: episode28Thumb,
+      streamId: 'b75b1413b67d2e1c7d0a756797516c93',
       isNew: true,
       isLocked: true,
     },
