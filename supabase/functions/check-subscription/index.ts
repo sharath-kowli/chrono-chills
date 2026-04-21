@@ -92,6 +92,22 @@ serve(async (req) => {
       }
     }
 
+    // Fallback: check entitlements table (populated by webhook)
+    if (!hasActiveSub && !hasLifetime) {
+      const { data: entitlements } = await supabaseClient.from("entitlements")
+        .select("plan, status")
+        .eq("email", user.email)
+        .eq("status", "active");
+
+      if (entitlements && entitlements.length > 0) {
+        for (const ent of entitlements) {
+          if (ent.plan === "lifetime") hasLifetime = true;
+          if (ent.plan === "weekly") { hasActiveSub = true; }
+        }
+        logStep("Entitlement fallback matched", { entitlements });
+      }
+    }
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub || hasLifetime,
       lifetime: hasLifetime,
