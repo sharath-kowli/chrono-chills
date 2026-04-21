@@ -39,7 +39,7 @@ const Watch = () => {
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
-  const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 10;
+  const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
   const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked() && !subscribed;
 
   const goToNextEpisode = useCallback(() => {
@@ -219,7 +219,7 @@ const Watch = () => {
             {nextEpisode && (
               <button
                 onClick={() => {
-                  if (nextEpisode.number >= 10 && !isPremiumUnlocked() && !subscribed) {
+                  if (nextEpisode.number >= 13 && !isPremiumUnlocked() && !subscribed) {
                     setShowPaywall(true);
                   } else {
                     navigate(`/watch/${nextEpisode.id}`);
