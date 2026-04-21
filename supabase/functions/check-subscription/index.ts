@@ -62,7 +62,7 @@ serve(async (req) => {
       limit: 1,
     });
 
-    const hasActiveSub = subscriptions.data.length > 0;
+    let hasActiveSub = subscriptions.data.length > 0;
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
