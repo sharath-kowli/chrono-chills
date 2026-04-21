@@ -32,6 +32,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setSubscribed(false);
+        setLifetime(false);
         setSubscriptionEnd(null);
         setLoading(false);
         return;
