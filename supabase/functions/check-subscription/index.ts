@@ -62,7 +62,7 @@ serve(async (req) => {
       limit: 1,
     });
 
-    const hasActiveSub = subscriptions.data.length > 0;
+    let hasActiveSub = subscriptions.data.length > 0;
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
@@ -89,6 +89,22 @@ serve(async (req) => {
           logStep("Lifetime purchase found", { sessionId: session.id });
           break;
         }
+      }
+    }
+
+    // Fallback: check entitlements table (populated by webhook)
+    if (!hasActiveSub && !hasLifetime) {
+      const { data: entitlements } = await supabaseClient.from("entitlements")
+        .select("plan, status")
+        .eq("email", user.email)
+        .eq("status", "active");
+
+      if (entitlements && entitlements.length > 0) {
+        for (const ent of entitlements) {
+          if (ent.plan === "lifetime") hasLifetime = true;
+          if (ent.plan === "weekly") { hasActiveSub = true; }
+        }
+        logStep("Entitlement fallback matched", { entitlements });
       }
     }
 

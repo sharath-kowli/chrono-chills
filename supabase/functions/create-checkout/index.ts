@@ -59,7 +59,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode,
-      success_url: `${origin}/payment-success`,
+      success_url: `${origin}/payment-success?plan=${plan}`,
       cancel_url: `${origin}/pricing`,
     });
 

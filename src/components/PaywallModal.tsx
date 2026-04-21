@@ -12,6 +12,7 @@ import { unlockPremium } from '@/lib/unlock';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useToast } from '@/components/ui/use-toast';
+import { pushEvent } from '@/lib/gtm';
 
 interface PaywallModalProps {
   open: boolean;
@@ -28,13 +29,21 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
   const [showRedeemInput, setShowRedeemInput] = useState(false);
   const [redeemCode, setRedeemCode] = useState('');
   const [redeemError, setRedeemError] = useState('');
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('lifetime');
   const { checkSubscription } = useSubscription();
   const { toast } = useToast();
 
+  const isCheckoutLoading = loadingPlan !== null;
+
   const handleSubscribe = async (plan: PlanType) => {
-    setIsCheckoutLoading(true);
+    if (isCheckoutLoading) return; // prevent double clicks
+    setLoadingPlan(plan);
+    setCheckoutError(null);
+
+    pushEvent('checkout_started', { plan, episode: episodeTitle });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -50,14 +59,23 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
         window.open(data.url, '_blank');
       }
     } catch (error: any) {
+      const msg = error.message || 'Failed to start checkout';
+      setCheckoutError(msg);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to start checkout',
+        description: msg,
       });
     } finally {
-      setIsCheckoutLoading(false);
+      setLoadingPlan(null);
     }
+  };
+
+  const handlePlanSelect = (plan: PlanType) => {
+    if (isCheckoutLoading) return;
+    setSelectedPlan(plan);
+    setCheckoutError(null);
+    pushEvent('plan_selected', { plan, episode: episodeTitle });
   };
 
   const handleRedeem = () => {
@@ -76,10 +94,12 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
   };
 
   const handleClose = (isOpen: boolean) => {
+    if (isCheckoutLoading) return; // prevent closing while loading
     if (!isOpen) {
       setShowRedeemInput(false);
       setRedeemCode('');
       setRedeemError('');
+      setCheckoutError(null);
     }
     onOpenChange(isOpen);
   };
@@ -105,12 +125,13 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
           <div className="space-y-3">
             {/* Lifetime option */}
             <button
-              onClick={() => setSelectedPlan('lifetime')}
+              onClick={() => handlePlanSelect('lifetime')}
+              disabled={isCheckoutLoading}
               className={`w-full rounded-lg border p-4 text-left transition-all ${
                 selectedPlan === 'lifetime'
                   ? 'border-primary bg-primary/10 ring-1 ring-primary'
                   : 'border-border bg-background hover:border-muted-foreground/30'
-              }`}
+              } ${isCheckoutLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -127,12 +148,13 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
 
             {/* Weekly option */}
             <button
-              onClick={() => setSelectedPlan('weekly')}
+              onClick={() => handlePlanSelect('weekly')}
+              disabled={isCheckoutLoading}
               className={`w-full rounded-lg border p-4 text-left transition-all ${
                 selectedPlan === 'weekly'
                   ? 'border-primary bg-primary/10 ring-1 ring-primary'
                   : 'border-border bg-background hover:border-muted-foreground/30'
-              }`}
+              } ${isCheckoutLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -161,24 +183,31 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
               Ad-free viewing experience
             </li>
           </ul>
+
+          {checkoutError && (
+            <p className="text-center text-sm text-destructive">{checkoutError}</p>
+          )}
           
           <Button 
             onClick={() => handleSubscribe(selectedPlan)}
             disabled={isCheckoutLoading}
             className="w-full bg-primary py-6 text-lg font-semibold hover:bg-primary/90"
           >
-            {isCheckoutLoading
-              ? 'Loading...'
-              : selectedPlan === 'lifetime'
-                ? 'Get Lifetime Access – $19.99'
-                : 'Start Watching – $1.99/week'}
+            {loadingPlan === 'lifetime'
+              ? 'Opening checkout…'
+              : loadingPlan === 'weekly'
+                ? 'Opening checkout…'
+                : selectedPlan === 'lifetime'
+                  ? 'Get Lifetime Access – $19.99'
+                  : 'Start Watching – $1.99/week'}
           </Button>
           
           <div className="border-t border-border pt-4">
             {!showRedeemInput ? (
               <button
                 onClick={() => setShowRedeemInput(true)}
-                className="flex w-full items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isCheckoutLoading}
+                className="flex w-full items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               >
                 <Ticket className="h-4 w-4" />
                 Have a code? Redeem here
@@ -195,8 +224,9 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                     }}
                     className="flex-1 bg-background"
                     onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
+                    disabled={isCheckoutLoading}
                   />
-                  <Button onClick={handleRedeem} variant="secondary">
+                  <Button onClick={handleRedeem} variant="secondary" disabled={isCheckoutLoading}>
                     Redeem
                   </Button>
                 </div>
