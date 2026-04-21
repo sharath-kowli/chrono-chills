@@ -73,7 +73,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [checkSubscription]);
 
   return (
-    <SubscriptionContext.Provider value={{ subscribed, subscriptionEnd, loading, checkSubscription }}>
+    <SubscriptionContext.Provider value={{ subscribed, lifetime, subscriptionEnd, loading, checkSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );
