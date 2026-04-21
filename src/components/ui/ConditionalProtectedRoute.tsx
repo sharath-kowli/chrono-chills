@@ -6,7 +6,7 @@ export function ConditionalProtectedRoute({ children }: { children: React.ReactN
   const { episodeId } = useParams<{ episodeId: string }>();
   const episode = series.episodes.find((ep) => ep.id === episodeId);
   
-  // Free episodes (number < 10) don't require auth
+  // Free episodes (number < 13) don't require auth
   const isFreeEpisode = episode && episode.number < 13;
   
   if (isFreeEpisode) {
