@@ -52,6 +52,7 @@ import episode30Thumb from '@/assets/episode-30.jpg';
 import episode31Thumb from '@/assets/episode-31.jpg';
 import episode32Thumb from '@/assets/episode-32.jpg';
 import episode33Thumb from '@/assets/episode-33.jpg';
+import episode34Thumb from '@/assets/episode-34.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -377,6 +378,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode33Thumb,
       streamId: '84e018d9b26cd0058ba99db19d058a36',
+      isLocked: true,
+    },
+    {
+      id: 'ep-34',
+      number: 34,
+      title: 'A Piece of Home',
+      subtitle: 'The group finds a rare moment of rest.',
+      duration: '0:30',
+      thumbnail: episode34Thumb,
+      streamId: 'f280105211392be169a2a5351f109231',
       isNew: true,
       isLocked: true,
     },
