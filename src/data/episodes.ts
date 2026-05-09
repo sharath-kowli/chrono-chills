@@ -51,6 +51,7 @@ import episode29Thumb from '@/assets/episode-29.jpg';
 import episode30Thumb from '@/assets/episode-30.jpg';
 import episode31Thumb from '@/assets/episode-31.jpg';
 import episode32Thumb from '@/assets/episode-32.jpg';
+import episode33Thumb from '@/assets/episode-33.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -366,6 +367,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode32Thumb,
       streamId: '77dd5cccb00dddc0800349fb69a863a1',
+      isLocked: true,
+    },
+    {
+      id: 'ep-33',
+      number: 33,
+      title: 'Clinical Hospitality',
+      subtitle: 'The survivors settle in for the testing.',
+      duration: '0:30',
+      thumbnail: episode33Thumb,
+      streamId: '84e018d9b26cd0058ba99db19d058a36',
       isNew: true,
       isLocked: true,
     },
