@@ -50,6 +50,7 @@ import episode28Thumb from '@/assets/episode-28.jpg';
 import episode29Thumb from '@/assets/episode-29.jpg';
 import episode30Thumb from '@/assets/episode-30.jpg';
 import episode31Thumb from '@/assets/episode-31.jpg';
+import episode32Thumb from '@/assets/episode-32.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -355,6 +356,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode31Thumb,
       streamId: '89972b1718d7f57971ecf615ad6bf80d',
+      isLocked: true,
+    },
+    {
+      id: 'ep-32',
+      number: 32,
+      title: 'The Bunker',
+      subtitle: 'Out with the old, in with the new.',
+      duration: '0:30',
+      thumbnail: episode32Thumb,
+      streamId: '77dd5cccb00dddc0800349fb69a863a1',
       isNew: true,
       isLocked: true,
     },
