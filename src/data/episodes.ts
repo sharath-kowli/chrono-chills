@@ -48,6 +48,7 @@ import episode26Thumb from '@/assets/episode-26.jpg';
 import episode27Thumb from '@/assets/episode-27.jpg';
 import episode28Thumb from '@/assets/episode-28.jpg';
 import episode29Thumb from '@/assets/episode-29.jpg';
+import episode30Thumb from '@/assets/episode-30.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -333,6 +334,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode29Thumb,
       streamId: '247ad3dc20743102eb6db25b567ad754',
+      isLocked: true,
+    },
+    {
+      id: 'ep-30',
+      number: 30,
+      title: 'The Dark Passenger',
+      subtitle: 'The hospital reveals its horrid secret.',
+      duration: '0:30',
+      thumbnail: episode30Thumb,
+      streamId: 'ff3105f48958ac580795b10ac2154c5e',
       isNew: true,
       isLocked: true,
     },
