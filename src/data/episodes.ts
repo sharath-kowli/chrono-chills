@@ -49,6 +49,7 @@ import episode27Thumb from '@/assets/episode-27.jpg';
 import episode28Thumb from '@/assets/episode-28.jpg';
 import episode29Thumb from '@/assets/episode-29.jpg';
 import episode30Thumb from '@/assets/episode-30.jpg';
+import episode31Thumb from '@/assets/episode-31.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -344,6 +345,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode30Thumb,
       streamId: 'ff3105f48958ac580795b10ac2154c5e',
+      isLocked: true,
+    },
+    {
+      id: 'ep-31',
+      number: 31,
+      title: 'Fruit of the Harvest',
+      subtitle: 'Desperate dash for survival.',
+      duration: '0:30',
+      thumbnail: episode31Thumb,
+      streamId: '89972b1718d7f57971ecf615ad6bf80d',
       isNew: true,
       isLocked: true,
     },
