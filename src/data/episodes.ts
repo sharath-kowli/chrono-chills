@@ -47,6 +47,7 @@ import episode25Thumb from '@/assets/episode-25.jpg';
 import episode26Thumb from '@/assets/episode-26.jpg';
 import episode27Thumb from '@/assets/episode-27.jpg';
 import episode28Thumb from '@/assets/episode-28.jpg';
+import episode29Thumb from '@/assets/episode-29.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -322,6 +323,16 @@ export const series: Series = {
       duration: '0:44',
       thumbnail: episode28Thumb,
       streamId: 'b75b1413b67d2e1c7d0a756797516c93',
+      isLocked: true,
+    },
+    {
+      id: 'ep-29',
+      number: 29,
+      title: 'Pathological',
+      subtitle: 'The survivors make their way toward the lab.',
+      duration: '0:30',
+      thumbnail: episode29Thumb,
+      streamId: '247ad3dc20743102eb6db25b567ad754',
       isNew: true,
       isLocked: true,
     },
