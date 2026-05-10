@@ -53,6 +53,7 @@ import episode31Thumb from '@/assets/episode-31.jpg';
 import episode32Thumb from '@/assets/episode-32.jpg';
 import episode33Thumb from '@/assets/episode-33.jpg';
 import episode34Thumb from '@/assets/episode-34.jpg';
+import episode35Thumb from '@/assets/episode-35.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -388,6 +389,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode34Thumb,
       streamId: 'f280105211392be169a2a5351f109231',
+      isLocked: true,
+    },
+    {
+      id: 'ep-35',
+      number: 35,
+      title: 'Speculative Fiction',
+      subtitle: 'Searching for a name for the nightmare.',
+      duration: '0:30',
+      thumbnail: episode35Thumb,
+      streamId: '814d7db16d724704e63001ea06786d64',
       isNew: true,
       isLocked: true,
     },
