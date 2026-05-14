@@ -54,6 +54,7 @@ import episode32Thumb from '@/assets/episode-32.jpg';
 import episode33Thumb from '@/assets/episode-33.jpg';
 import episode34Thumb from '@/assets/episode-34.jpg';
 import episode35Thumb from '@/assets/episode-35.jpg';
+import episode36Thumb from '@/assets/episode-36.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -399,6 +400,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode35Thumb,
       streamId: '814d7db16d724704e63001ea06786d64',
+      isLocked: true,
+    },
+    {
+      id: 'ep-36',
+      number: 36,
+      title: 'Cat Shit Crazy',
+      subtitle: 'A clue to survival is uncovered.',
+      duration: '0:30',
+      thumbnail: episode36Thumb,
+      streamId: '382f886c3babffaa1bc99996278d48cb',
       isNew: true,
       isLocked: true,
     },
