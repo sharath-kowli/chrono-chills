@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import type { Episode } from "@/data/episodes";
 import { PaywallModal } from "./PaywallModal";
-import { isPremiumUnlocked } from "@/lib/unlock";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useIsBookmarked } from "@/hooks/useUserData";
 
@@ -21,7 +20,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const { data: isBookmarked } = useIsBookmarked(episode.id);
 
   const isPremiumEpisode = episode.number >= 13;
-  const isLocked = isPremiumEpisode && !isPremiumUnlocked() && !subscribed;
+  const isLocked = isPremiumEpisode && !subscribed;
 
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {

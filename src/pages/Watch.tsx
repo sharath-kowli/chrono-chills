@@ -4,7 +4,6 @@ import { series } from "@/data/episodes";
 import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { isPremiumUnlocked } from "@/lib/unlock";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +39,7 @@ const Watch = () => {
   const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
-  const isNextEpisodeLocked = isNextEpisodePremium && !isPremiumUnlocked() && !subscribed;
+  const isNextEpisodeLocked = isNextEpisodePremium && !subscribed;
 
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
@@ -219,7 +218,7 @@ const Watch = () => {
             {nextEpisode && (
               <button
                 onClick={() => {
-                  if (nextEpisode.number >= 13 && !isPremiumUnlocked() && !subscribed) {
+                  if (nextEpisode.number >= 13 && !subscribed) {
                     setShowPaywall(true);
                   } else {
                     navigate(`/watch/${nextEpisode.id}`);

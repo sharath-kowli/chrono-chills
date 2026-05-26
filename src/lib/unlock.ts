@@ -1,15 +1,19 @@
-const UNLOCK_KEY = 'static-premium-unlocked';
+// Premium access is determined server-side via the `entitlements` table and
+// Stripe subscription state (see `useSubscription`). The previous
+// localStorage flag was removed because it could be set by any user from
+// browser DevTools, bypassing the paywall.
+//
+// These no-op helpers are kept only to avoid breaking any stray imports.
+// Do NOT use them as an access-control signal.
 
-/** Check localStorage OR Stripe subscription */
 export function isPremiumUnlocked(): boolean {
-  return localStorage.getItem(UNLOCK_KEY) === 'true';
+  return false;
 }
 
-/** Local unlock (redeem code fallback) */
 export function unlockPremium(): void {
-  localStorage.setItem(UNLOCK_KEY, 'true');
+  // no-op: client cannot grant itself premium access.
 }
 
 export function lockPremium(): void {
-  localStorage.removeItem(UNLOCK_KEY);
+  // no-op
 }
