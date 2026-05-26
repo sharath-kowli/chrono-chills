@@ -55,6 +55,7 @@ import episode33Thumb from '@/assets/episode-33.jpg';
 import episode34Thumb from '@/assets/episode-34.jpg';
 import episode35Thumb from '@/assets/episode-35.jpg';
 import episode36Thumb from '@/assets/episode-36.jpg';
+import episode37Thumb from '@/assets/episode-37.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -410,6 +411,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode36Thumb,
       streamId: 'a05b08db24bddef308445d52725df9bb',
+      isLocked: true,
+    },
+    {
+      id: 'ep-37',
+      number: 37,
+      title: 'Diagram of Survival',
+      subtitle: 'A harsh lesson in probability.',
+      duration: '0:30',
+      thumbnail: episode37Thumb,
+      streamId: '38b99d22626737e2f91ced2c3140d79c',
       isNew: true,
       isLocked: true,
     },
