@@ -1,0 +1,18 @@
+# Chrono Chills
+
+> Horror sci-fi short-form streaming. Bite-sized vertical episodes of the serialized thriller STILL HERE. New chapters drop weekly.
+
+Chrono Chills is a mobile-first streaming app for short, serialized fiction. Episodes 1–9 are free; episodes 10 and onward unlock with a $1.99/week subscription or one-time lifetime access.
+
+## Pages
+
+- [Home](/): Browse all episodes of STILL HERE.
+- [About](/about): What Chrono Chills is and why it exists.
+- [Pricing](/pricing): Free episodes, subscription tiers, and lifetime access.
+- [Install](/install): Add Chrono Chills to your phone as a PWA.
+
+## Optional
+
+- [Terms of Service](/terms)
+- [Privacy Policy](/privacy)
+- [Refund Policy](/refund)

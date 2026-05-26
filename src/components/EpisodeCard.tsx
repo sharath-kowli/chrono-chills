@@ -40,7 +40,8 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
         <div className="relative aspect-[9/16] overflow-hidden rounded-lg">
           <img
             src={episode.thumbnail}
-            alt={episode.title}
+            alt={`STILL HERE Episode ${episode.number}: ${episode.title}`}
+            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="vhs-lines absolute inset-0" />

@@ -1,8 +1,14 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const Refund = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Refund Policy — Chrono Chills"
+      description="How refunds are handled on Chrono Chills subscriptions. Contact support within 7 days for technical issues."
+      path="/refund"
+    />
     <Header />
     <main className="container max-w-2xl px-4 pt-24 pb-20">
       <h1 className="font-display text-4xl tracking-wide text-foreground mb-8">Refund Policy</h1>

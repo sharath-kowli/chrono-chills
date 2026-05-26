@@ -1,8 +1,14 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const About = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="About Chrono Chills — Short, Serialized Fiction"
+      description="Chrono Chills makes short, atmospheric video episodes you can watch in minutes. Learn how the serialized horror sci-fi platform works."
+      path="/about"
+    />
     <Header />
     <main className="container max-w-2xl px-4 pt-24 pb-20">
       <h1 className="font-display text-4xl tracking-wide text-foreground mb-8">About ChronoChills</h1>

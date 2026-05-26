@@ -1,8 +1,14 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const Privacy = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Privacy Policy — Chrono Chills"
+      description="How StarRiver B.V. handles your data on Chrono Chills: account info, payments via Stripe, and viewing progress."
+      path="/privacy"
+    />
     <Header />
     <main className="container max-w-2xl px-4 pt-24 pb-20">
       <h1 className="font-display text-4xl tracking-wide text-foreground mb-8">Privacy Policy</h1>
