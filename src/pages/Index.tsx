@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { SeriesHero } from "@/components/SeriesHero";
 import { EpisodeCard } from "@/components/EpisodeCard";
 import { series } from "@/data/episodes";
@@ -91,12 +92,45 @@ const Index = () => {
           .filter(Boolean) as typeof series.episodes)
       : [];
 
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Chrono Chills",
+      url: "https://chronochills.com",
+      logo: "https://chronochills.com/pwa-512.png",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Chrono Chills",
+      url: "https://chronochills.com",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "TVSeries",
+      name: series.title,
+      description: series.tagline,
+      numberOfEpisodes: series.episodes.length,
+      url: "https://chronochills.com/",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Chrono Chills — Horror Sci-Fi Short-Form Series"
+        description={`Watch STILL HERE on Chrono Chills — a horror sci-fi thriller in ${series.episodes.length} bite-sized vertical episodes. New chapters drop weekly. Stream free.`}
+        path="/"
+        jsonLd={jsonLd}
+      />
       <Header />
+
+      <h1 className="sr-only">Chrono Chills — short, serialized horror sci-fi fiction</h1>
 
       {/* Hero section */}
       <SeriesHero series={series} />
+
 
       {/* Episodes grid */}
       <section className="container px-4 pb-20 space-y-12 mt-12">
@@ -109,6 +143,7 @@ const Index = () => {
               {canScrollCWLeft && (
                 <button
                   onClick={() => scroll(continueWatchingRef, "left")}
+                  aria-label="Scroll Continue Watching left"
                   className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -127,6 +162,7 @@ const Index = () => {
               {canScrollCWRight && (
                 <button
                   onClick={() => scroll(continueWatchingRef, "right")}
+                  aria-label="Scroll Continue Watching right"
                   className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -145,6 +181,7 @@ const Index = () => {
               {canScrollFavLeft && (
                 <button
                   onClick={() => scroll(bookmarksRef, "left")}
+                  aria-label="Scroll My Favorites left"
                   className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -163,6 +200,7 @@ const Index = () => {
               {canScrollFavRight && (
                 <button
                   onClick={() => scroll(bookmarksRef, "right")}
+                  aria-label="Scroll My Favorites right"
                   className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -182,6 +220,7 @@ const Index = () => {
             {canScrollLeft && (
               <button
                 onClick={() => scroll(scrollRef, "left")}
+                aria-label="Scroll All Episodes left"
                 className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -200,6 +239,7 @@ const Index = () => {
             {canScrollRight && (
               <button
                 onClick={() => scroll(scrollRef, "right")}
+                aria-label="Scroll All Episodes right"
                 className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
               >
                 <ChevronRight className="h-5 w-5" />

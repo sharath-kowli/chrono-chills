@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { pushEvent } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -62,11 +63,16 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <SEO
+        title="Sign In to Chrono Chills"
+        description="Sign in to Chrono Chills to track your progress, bookmark episodes, and unlock premium chapters of STILL HERE."
+        path="/auth"
+      />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="glitch font-display text-4xl tracking-widest text-foreground mb-2" data-text="WELCOME">
+          <h1 className="glitch font-display text-4xl tracking-widest text-foreground mb-2" data-text="WELCOME">
             WELCOME
-          </h2>
+          </h1>
           <p className="text-muted-foreground">Sign in or create an account to continue</p>
         </div>
 
