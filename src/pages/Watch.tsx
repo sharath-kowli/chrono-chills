@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Lock, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward } from "lucide-react";
 import { series } from "@/data/episodes";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -188,14 +189,36 @@ const Watch = () => {
   }
 
   const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=true&preload=auto`;
+  const thumbUrl = typeof episode.thumbnail === "string" ? episode.thumbnail : "";
+  const seoTitle = `Watch STILL HERE Episode ${episode.number}: ${episode.title} — Chrono Chills`;
+  const seoDesc = `${episode.subtitle} Episode ${episode.number} of the horror sci-fi series STILL HERE on Chrono Chills.`;
+  const videoJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: `${episode.title} — STILL HERE Episode ${episode.number}`,
+    description: episode.subtitle,
+    thumbnailUrl: thumbUrl ? `https://chronochills.com${thumbUrl}` : undefined,
+    uploadDate: "2026-01-01",
+    partOfSeries: { "@type": "TVSeries", name: "STILL HERE" },
+    episodeNumber: episode.number,
+  };
 
   return (
     <div className="fixed inset-0 bg-background">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        path={`/watch/${episode.id}`}
+        image={thumbUrl ? `https://chronochills.com${thumbUrl}` : undefined}
+        type="video.episode"
+        jsonLd={videoJsonLd}
+      />
       {/* Top overlay: back + nav */}
       <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
         <div className="flex h-14 items-center justify-between px-4">
           <Link
             to="/"
+            aria-label="Back to all episodes"
             className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -206,6 +229,7 @@ const Watch = () => {
             {prevEpisode && (
               <button
                 onClick={() => navigate(`/watch/${prevEpisode.id}`)}
+                aria-label={`Previous episode: ${prevEpisode.title}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
                 title={`Previous: ${prevEpisode.title}`}
               >
