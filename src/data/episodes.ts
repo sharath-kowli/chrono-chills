@@ -56,6 +56,7 @@ import episode34Thumb from '@/assets/episode-34.jpg';
 import episode35Thumb from '@/assets/episode-35.jpg';
 import episode36Thumb from '@/assets/episode-36.jpg';
 import episode37Thumb from '@/assets/episode-37.jpg';
+import episode38Thumb from '@/assets/episode-38.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -421,6 +422,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode37Thumb,
       streamId: '38b99d22626737e2f91ced2c3140d79c',
+      isLocked: true,
+    },
+    {
+      id: 'ep-38',
+      number: 38,
+      title: 'Not a Dream',
+      subtitle: 'The past refuses to stay buried.',
+      duration: '0:30',
+      thumbnail: episode38Thumb,
+      streamId: 'd6d1d7cf2def153367f41aa04ffc7193',
       isNew: true,
       isLocked: true,
     },
