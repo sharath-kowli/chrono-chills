@@ -56,6 +56,7 @@ import episode34Thumb from '@/assets/episode-34.jpg';
 import episode35Thumb from '@/assets/episode-35.jpg';
 import episode36Thumb from '@/assets/episode-36.jpg';
 import episode37Thumb from '@/assets/episode-37.jpg';
+import episode38Thumb from '@/assets/episode-38.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
