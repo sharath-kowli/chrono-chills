@@ -1,8 +1,14 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const Terms = () => (
   <div className="min-h-screen bg-background">
+    <SEO
+      title="Terms of Service — Chrono Chills"
+      description="Terms of service for Chrono Chills, operated by StarRiver B.V. Covers subscriptions, billing, cancellation, and liability."
+      path="/terms"
+    />
     <Header />
     <main className="container max-w-2xl px-4 pt-24 pb-20">
       <h1 className="font-display text-4xl tracking-wide text-foreground mb-8">Terms of Service</h1>

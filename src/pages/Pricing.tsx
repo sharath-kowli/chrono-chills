@@ -1,10 +1,16 @@
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Check } from "lucide-react";
 
 const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Pricing — Chrono Chills Premium & Free Episodes"
+        description="Watch episodes 1–9 of STILL HERE free. Unlock everything for $1.99/week or get lifetime access. Cancel anytime."
+        path="/pricing"
+      />
       <Header />
       <main className="container max-w-3xl px-4 pt-28 pb-20">
         <h1 className="font-display text-4xl tracking-wide text-foreground mb-4">Pricing</h1>
