@@ -2,7 +2,6 @@ import { Header } from "@/components/Header";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, Crown, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { isPremiumUnlocked } from "@/lib/unlock";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEffect } from "react";
 import { pushEvent } from "@/lib/gtm";
@@ -15,10 +14,10 @@ const PaymentSuccess = () => {
   const planParam = searchParams.get("plan") as "weekly" | "lifetime" | null;
   const isLifetime = lifetime || planParam === "lifetime";
 
-  // Allow access if either localStorage unlock (redeem code) or Stripe subscription
-  const hasAccess = isPremiumUnlocked() || subscribed;
+  // Access is granted only by server-verified entitlement / subscription.
+  const hasAccess = subscribed;
 
-  // Re-check subscription on mount (user just came back from Stripe)
+  // Re-check subscription on mount (user just came back from Stripe or redeem)
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
@@ -27,11 +26,11 @@ const PaymentSuccess = () => {
   useEffect(() => {
     if (!loading && hasAccess) {
       pushEvent("checkout_completed", {
-        payment_method: isPremiumUnlocked() ? "redeem_code" : "stripe",
-        plan: isPremiumUnlocked() ? "redeem" : (isLifetime ? "lifetime" : "weekly"),
+        payment_method: planParam ? "stripe" : "redeem_code",
+        plan: isLifetime ? "lifetime" : "weekly",
       });
     }
-  }, [loading, hasAccess, isLifetime]);
+  }, [loading, hasAccess, isLifetime, planParam]);
 
   if (!loading && !hasAccess) {
     return <Navigate to="/" replace />;

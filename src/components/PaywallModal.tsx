@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { unlockPremium } from '@/lib/unlock';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,8 +20,6 @@ interface PaywallModalProps {
   onUnlock?: () => void;
 }
 
-const VALID_CODES = ['MERIROSVO1'];
-
 type PlanType = 'weekly' | 'lifetime';
 
 export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: PaywallModalProps) {
@@ -32,6 +29,7 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('lifetime');
+  const [redeemLoading, setRedeemLoading] = useState(false);
   const { checkSubscription } = useSubscription();
   const { toast } = useToast();
 
@@ -78,18 +76,38 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     pushEvent('plan_selected', { plan, episode: episodeTitle });
   };
 
-  const handleRedeem = () => {
-    const code = redeemCode.trim().toUpperCase();
-    if (VALID_CODES.includes(code)) {
-      unlockPremium();
-      setRedeemError('');
+  const handleRedeem = async () => {
+    if (redeemLoading) return;
+    const code = redeemCode.trim();
+    if (!code) {
+      setRedeemError('Please enter a code.');
+      return;
+    }
+    setRedeemLoading(true);
+    setRedeemError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/auth';
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('redeem-code', {
+        body: { code },
+      });
+      if (error || !data?.success) {
+        setRedeemError(data?.error || 'Invalid code. Please try again.');
+        return;
+      }
+      await checkSubscription();
       setRedeemCode('');
       setShowRedeemInput(false);
       onUnlock?.();
       onOpenChange(false);
       window.location.href = '/payment-success';
-    } else {
-      setRedeemError('Invalid code. Please try again.');
+    } catch {
+      setRedeemError('Unable to redeem code. Please try again.');
+    } finally {
+      setRedeemLoading(false);
     }
   };
 
@@ -226,8 +244,8 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                     onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
                     disabled={isCheckoutLoading}
                   />
-                  <Button onClick={handleRedeem} variant="secondary" disabled={isCheckoutLoading}>
-                    Redeem
+                  <Button onClick={handleRedeem} variant="secondary" disabled={isCheckoutLoading || redeemLoading}>
+                    {redeemLoading ? 'Redeeming…' : 'Redeem'}
                   </Button>
                 </div>
                 {redeemError && (
