@@ -232,8 +232,13 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
               </button>
             ) : (
               <div className="space-y-3">
+                <label htmlFor="redeem-code-input" className="sr-only">
+                  Redeem code
+                </label>
                 <div className="flex gap-2">
                   <Input
+                    id="redeem-code-input"
+                    aria-label="Redeem code"
                     placeholder="Enter code"
                     value={redeemCode}
                     onChange={(e) => {

@@ -248,6 +248,7 @@ const Watch = () => {
                     navigate(`/watch/${nextEpisode.id}`);
                   }
                 }}
+                aria-label={`Next episode: ${nextEpisode.title}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
                 title={`Next: ${nextEpisode.title}`}
               >
@@ -290,6 +291,7 @@ const Watch = () => {
                     }
                   );
                 }}
+                aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this episode"}
                 className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
               >
                 {isBookmarked ? (
