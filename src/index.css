@@ -265,3 +265,29 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 0.5);
 }
+
+/* Safe-area utilities for notch / cutout */
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pl-safe { padding-left: env(safe-area-inset-left); }
+.pr-safe { padding-right: env(safe-area-inset-right); }
+.top-safe { top: env(safe-area-inset-top); }
+
+/* Reels-style transitions */
+@keyframes slide-up-out {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes slide-down-out {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0; }
+}
+@keyframes rubber-band {
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(40px); }
+  100% { transform: translateY(0); }
+}
+.reels-slide-up { animation: slide-up-out 260ms ease-in forwards; }
+.reels-slide-down { animation: slide-down-out 260ms ease-in forwards; }
+.reels-rubber { animation: rubber-band 420ms cubic-bezier(.2,.8,.2,1); }
+

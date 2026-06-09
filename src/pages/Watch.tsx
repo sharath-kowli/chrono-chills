@@ -1,7 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Lock, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward } from "lucide-react";
+import { ArrowLeft, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward, Play } from "lucide-react";
 import { series } from "@/data/episodes";
-import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -11,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGeoTracking } from "@/hooks/useGeoTracking";
 import { pushEvent } from "@/lib/gtm";
+
+type SlideDir = "" | "reels-slide-up" | "reels-slide-down" | "reels-rubber";
 
 const Watch = () => {
   const { subscribed } = useSubscription();
@@ -22,6 +23,8 @@ const Watch = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [slideClass, setSlideClass] = useState<SlideDir>("");
   const progressSaveRef = useRef<NodeJS.Timeout | null>(null);
 
   // User Data Hooks
@@ -42,14 +45,30 @@ const Watch = () => {
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
   const isNextEpisodeLocked = isNextEpisodePremium && !subscribed;
 
+  const transitionTo = useCallback((path: string, direction: "up" | "down") => {
+    setSlideClass(direction === "up" ? "reels-slide-up" : "reels-slide-down");
+    window.setTimeout(() => navigate(path), 240);
+  }, [navigate]);
+
   const goToNextEpisode = useCallback(() => {
     if (!nextEpisode) return;
     if (isNextEpisodeLocked) {
       setShowPaywall(true);
     } else {
-      navigate(`/watch/${nextEpisode.id}`);
+      transitionTo(`/watch/${nextEpisode.id}`, "up");
     }
-  }, [nextEpisode, navigate, isNextEpisodeLocked]);
+  }, [nextEpisode, isNextEpisodeLocked, transitionTo]);
+
+  const goToPrevEpisode = useCallback(() => {
+    if (!prevEpisode) {
+      // rubber-band bounce at first episode
+      setSlideClass("reels-rubber");
+      toast("You're on the first episode");
+      window.setTimeout(() => setSlideClass(""), 450);
+      return;
+    }
+    transitionTo(`/watch/${prevEpisode.id}`, "down");
+  }, [prevEpisode, transitionTo]);
 
   // Load Cloudflare Stream SDK
   useEffect(() => {
@@ -68,7 +87,6 @@ const Watch = () => {
   useEffect(() => {
     if (!sdkReady || !episode || !iframeRef.current) return;
 
-    // Small delay to ensure iframe is mounted
     const timeout = setTimeout(() => {
       try {
         const Stream = (window as any).Stream;
@@ -77,37 +95,30 @@ const Watch = () => {
         const player = Stream(iframeRef.current);
         playerRef.current = player;
 
-        // Resume from saved position
         if (progress?.timestamp && !progress?.completed) {
           player.currentTime = Math.max(0, progress.timestamp - 1);
         }
 
-        // Video ended → exit fullscreen first, then auto-advance (TikTok style)
+        player.addEventListener("play", () => setPaused(false));
+        player.addEventListener("pause", () => setPaused(true));
+
         player.addEventListener("ended", () => {
-          console.log("Analytics: episode_completed", {
-            episodeId: episode.id,
-            episodeNumber: episode.number,
-            title: episode.title,
-            timestamp: new Date().toISOString(),
-          });
           pushEvent("episode_completed", {
             episode_id: episode.id,
             episode_number: episode.number,
             episode_title: episode.title,
           });
           updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+          const advance = () => {
+            if (nextEpisode) goToNextEpisode();
+          };
           if (document.fullscreenElement) {
-            document.exitFullscreen().then(() => {
-              if (nextEpisode) goToNextEpisode();
-            }).catch(() => {
-              if (nextEpisode) goToNextEpisode();
-            });
-          } else if (nextEpisode) {
-            goToNextEpisode();
+            document.exitFullscreen().then(advance).catch(advance);
+          } else {
+            advance();
           }
         });
 
-        // Save progress every 10 seconds
         if (progressSaveRef.current) clearInterval(progressSaveRef.current);
         progressSaveRef.current = setInterval(() => {
           if (player.currentTime > 0 && session) {
@@ -132,24 +143,19 @@ const Watch = () => {
   // Reset state when episode changes
   useEffect(() => {
     setShowPaywall(false);
+    setSlideClass("");
+    setPaused(false);
   }, [episodeId]);
 
   // Track episode view + milestone events
   useEffect(() => {
     if (!episode) return;
-    console.log("Analytics: episode_started", {
-      episodeId: episode.id,
-      episodeNumber: episode.number,
-      title: episode.title,
-      timestamp: new Date().toISOString(),
-    });
     pushEvent("episode_started", {
       episode_id: episode.id,
       episode_number: episode.number,
       episode_title: episode.title,
     });
 
-    // Track unique episodes watched in localStorage and fire milestone events (once per user ever)
     const storageKey = "unique_episodes_watched";
     const firedKey = "milestone_events_fired";
     const watched: string[] = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -160,20 +166,64 @@ const Watch = () => {
     }
     const count = watched.length;
     if (count >= 2 && !fired.includes("2")) {
-      pushEvent("milestone_2_episodes", {
-        unique_episodes_count: count,
-      });
+      pushEvent("milestone_2_episodes", { unique_episodes_count: count });
       fired.push("2");
       localStorage.setItem(firedKey, JSON.stringify(fired));
     }
     if (count >= 10 && !fired.includes("10")) {
-      pushEvent("milestone_10_episodes", {
-        unique_episodes_count: count,
-      });
+      pushEvent("milestone_10_episodes", { unique_episodes_count: count });
       fired.push("10");
       localStorage.setItem(firedKey, JSON.stringify(fired));
     }
   }, [episode]);
+
+  // Touch / swipe handlers (Reels-style vertical pager)
+  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const lastSwipeDistRef = useRef(0);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    const dt = Date.now() - start.t;
+    lastSwipeDistRef.current = Math.hypot(dx, dy);
+    if (Math.abs(dy) < 60) return;
+    if (Math.abs(dx) > Math.abs(dy)) return;
+    const velocity = Math.abs(dy) / Math.max(dt, 1);
+    if (velocity < 0.2 && Math.abs(dy) < 120) return;
+    if (dy < 0) {
+      goToNextEpisode();
+    } else {
+      goToPrevEpisode();
+    }
+  };
+
+  // Tap (without swipe) → toggle play/pause
+  const handleTapOverlay = (e: React.MouseEvent) => {
+    // suppress accidental tap fired after a swipe
+    if (lastSwipeDistRef.current > 10) {
+      lastSwipeDistRef.current = 0;
+      e.preventDefault();
+      return;
+    }
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      if (paused) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   if (!episode) {
     return (
@@ -188,7 +238,8 @@ const Watch = () => {
     );
   }
 
-  const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=true&preload=auto`;
+  // controls=false hides Cloudflare's UI so our overlay owns interaction
+  const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=true&preload=auto&controls=false`;
   const thumbUrl = typeof episode.thumbnail === "string" ? episode.thumbnail : "";
   const seoTitle = `Watch STILL HERE Episode ${episode.number}: ${episode.title} — Chrono Chills`;
   const seoDesc = `${episode.subtitle} Episode ${episode.number} of the horror sci-fi series STILL HERE on Chrono Chills.`;
@@ -204,7 +255,11 @@ const Watch = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background">
+    <div
+      className={`fixed inset-0 bg-background overflow-hidden ${slideClass}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <SEO
         title={seoTitle}
         description={seoDesc}
@@ -213,8 +268,8 @@ const Watch = () => {
         type="video.episode"
         jsonLd={videoJsonLd}
       />
-      {/* Top overlay: back + nav */}
-      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
+      {/* Top overlay: back + nav (safe-area aware) */}
+      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent pt-safe pl-safe pr-safe">
         <div className="flex h-14 items-center justify-between px-4">
           <Link
             to="/"
@@ -224,11 +279,10 @@ const Watch = () => {
             <ArrowLeft className="h-5 w-5" />
           </Link>
 
-          {/* Prev / Next episode nav */}
           <div className="pointer-events-auto flex items-center gap-2">
             {prevEpisode && (
               <button
-                onClick={() => navigate(`/watch/${prevEpisode.id}`)}
+                onClick={() => transitionTo(`/watch/${prevEpisode.id}`, "down")}
                 aria-label={`Previous episode: ${prevEpisode.title}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-sm transition-colors hover:bg-background/70"
                 title={`Previous: ${prevEpisode.title}`}
@@ -245,7 +299,7 @@ const Watch = () => {
                   if (nextEpisode.number >= 13 && !subscribed) {
                     setShowPaywall(true);
                   } else {
-                    navigate(`/watch/${nextEpisode.id}`);
+                    transitionTo(`/watch/${nextEpisode.id}`, "up");
                   }
                 }}
                 aria-label={`Next episode: ${nextEpisode.title}`}
@@ -265,14 +319,31 @@ const Watch = () => {
           key={episodeId}
           ref={iframeRef}
           src={streamSrc}
-          className="h-full w-full"
+          className="h-full w-full pointer-events-none"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
           style={{ border: "none" }}
         />
 
-        {/* Episode info overlay at bottom */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
+        {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI) */}
+        <button
+          type="button"
+          aria-label={paused ? "Resume" : "Pause"}
+          onClick={handleTapOverlay}
+          className="absolute inset-0 z-30 h-full w-full bg-transparent focus:outline-none"
+        />
+
+        {/* Paused indicator */}
+        {paused && (
+          <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm">
+              <Play className="h-10 w-10 text-foreground" fill="currentColor" />
+            </div>
+          </div>
+        )}
+
+        {/* Episode info overlay at bottom (safe-area aware) */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8 pl-safe pr-safe">
           <div className="flex items-end justify-between">
             <div>
               <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
