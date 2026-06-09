@@ -179,6 +179,7 @@ const Watch = () => {
 
   // Touch / swipe handlers (Reels-style vertical pager)
   const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const lastSwipeDistRef = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
@@ -191,23 +192,26 @@ const Watch = () => {
     const dx = t.clientX - start.x;
     const dy = t.clientY - start.y;
     const dt = Date.now() - start.t;
-    // Must be a vertical swipe (not a tap, not a horizontal swipe)
+    lastSwipeDistRef.current = Math.hypot(dx, dy);
     if (Math.abs(dy) < 60) return;
     if (Math.abs(dx) > Math.abs(dy)) return;
     const velocity = Math.abs(dy) / Math.max(dt, 1);
     if (velocity < 0.2 && Math.abs(dy) < 120) return;
     if (dy < 0) {
-      // swipe up → next
       goToNextEpisode();
     } else {
-      // swipe down → previous (rubber-band if first)
       goToPrevEpisode();
     }
   };
 
   // Tap (without swipe) → toggle play/pause
-  const handleTapOverlay = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
+  const handleTapOverlay = (e: React.MouseEvent) => {
+    // suppress accidental tap fired after a swipe
+    if (lastSwipeDistRef.current > 10) {
+      lastSwipeDistRef.current = 0;
+      e.preventDefault();
+      return;
+    }
     const player = playerRef.current;
     if (!player) return;
     try {
