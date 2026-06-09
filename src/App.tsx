@@ -22,8 +22,16 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import Install from "./pages/Install";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
+import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
+import { useNativeStatusBar } from "./hooks/useNativeStatusBar";
 
 const queryClient = new QueryClient();
+
+const NativeShell = () => {
+  useAndroidBackButton();
+  useNativeStatusBar();
+  return null;
+};
 
 const App = () => {
   // Resolve country once per session on app boot
@@ -37,6 +45,7 @@ const App = () => {
         <Sonner />
         <CookieConsent />
         <BrowserRouter>
+          <NativeShell />
           <PageViewTracker />
           <Routes>
             <Route path="/" element={<Index />} />
