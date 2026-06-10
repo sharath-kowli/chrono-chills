@@ -23,13 +23,11 @@ import Install from "./pages/Install";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
-import { useNativeStatusBar } from "./hooks/useNativeStatusBar";
 
 const queryClient = new QueryClient();
 
 const NativeShell = () => {
   useAndroidBackButton();
-  useNativeStatusBar();
   return null;
 };
 
