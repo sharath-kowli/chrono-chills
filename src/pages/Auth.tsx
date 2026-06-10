@@ -39,6 +39,40 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
+
+      // Detect Capacitor native runtime (iOS / Android wrapper).
+      let isNative = false;
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        isNative = Capacitor.isNativePlatform();
+      } catch {
+        isNative = false;
+      }
+
+      if (isNative) {
+        // Native: open Google in the system browser (Custom Tabs / SFSafariViewController)
+        // and come back through the chronochills:// deep link handled in NativeShell.
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            skipBrowserRedirect: true,
+            redirectTo: "chronochills://login-callback",
+          },
+        });
+
+        if (error) {
+          toast({ variant: "destructive", title: "Error", description: error.message });
+          return;
+        }
+
+        if (data?.url) {
+          const { Browser } = await import("@capacitor/browser");
+          await Browser.open({ url: data.url, windowName: "_self" });
+        }
+        return;
+      }
+
+      // Web fallback: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });

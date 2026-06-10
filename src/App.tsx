@@ -23,11 +23,13 @@ import Install from "./pages/Install";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
+import { useNativeOAuthDeepLink } from "./hooks/useNativeOAuthDeepLink";
 
 const queryClient = new QueryClient();
 
 const NativeShell = () => {
   useAndroidBackButton();
+  useNativeOAuthDeepLink();
   return null;
 };
 
