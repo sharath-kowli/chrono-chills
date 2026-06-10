@@ -204,9 +204,8 @@ const Watch = () => {
     }
   };
 
-  // Tap (without swipe) → toggle play/pause
+  // Tap (without swipe) → toggle play/pause. Query SDK for real state.
   const handleTapOverlay = (e: React.MouseEvent) => {
-    // suppress accidental tap fired after a swipe
     if (lastSwipeDistRef.current > 10) {
       lastSwipeDistRef.current = 0;
       e.preventDefault();
@@ -215,11 +214,28 @@ const Watch = () => {
     const player = playerRef.current;
     if (!player) return;
     try {
-      if (paused) {
-        player.play();
-      } else {
-        player.pause();
-      }
+      // Cloudflare Stream SDK: `paused` is an async getter (Promise).
+      Promise.resolve(player.paused)
+        .then((isPaused: boolean) => {
+          if (isPaused) {
+            const p = player.play();
+            if (p && typeof p.then === "function") p.catch(() => {});
+            setPaused(false);
+          } else {
+            player.pause();
+            setPaused(true);
+          }
+        })
+        .catch(() => {
+          // Fallback to local state
+          if (paused) {
+            player.play();
+            setPaused(false);
+          } else {
+            player.pause();
+            setPaused(true);
+          }
+        });
     } catch {
       // ignore
     }
@@ -269,7 +285,7 @@ const Watch = () => {
         jsonLd={videoJsonLd}
       />
       {/* Top overlay: back + nav (safe-area aware) */}
-      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent pt-safe pl-safe pr-safe">
+      <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 bg-gradient-to-b from-background/80 to-transparent">
         <div className="flex h-14 items-center justify-between px-4">
           <Link
             to="/"
@@ -343,7 +359,7 @@ const Watch = () => {
         )}
 
         {/* Episode info overlay at bottom (safe-area aware) */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8 pl-safe pr-safe">
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/60 to-transparent p-4 pb-8">
           <div className="flex items-end justify-between">
             <div>
               <span className="font-display text-sm tracking-wider text-primary">Episode {episode.number}</span>
