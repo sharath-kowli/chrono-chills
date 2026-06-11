@@ -5,36 +5,49 @@ import { pushEvent } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+// Public web URL used by the native app to perform OAuth via the managed broker.
+const WEB_AUTH_URL = "https://chrono-chills.lovable.app/auth?native=1";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [nativeHandoff, setNativeHandoff] = useState<{
+    access_token: string;
+    refresh_token: string;
+  } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNativeHandoffFlow = searchParams.get("native") === "1";
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    const handleSession = (session: any) => {
+      if (!session) return;
+      if (isNativeHandoffFlow) {
+        // Don't navigate away — show the "Return to app" button instead.
+        setNativeHandoff({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+      } else {
         navigate("/");
       }
-    });
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        if (event === "SIGNED_IN") {
-          pushEvent("sign_in", {
-            method: "google",
-            user_id: session.user.id,
-          });
-        }
-        navigate("/");
+      if (session && event === "SIGNED_IN") {
+        pushEvent("sign_in", { method: "google", user_id: session.user.id });
       }
+      handleSession(session);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, isNativeHandoffFlow]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -50,39 +63,22 @@ const Auth = () => {
       }
 
       if (isNative) {
-        // Native: open Google in the system browser (Custom Tabs / SFSafariViewController)
-        // and come back through the chronochills:// deep link handled in NativeShell.
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            skipBrowserRedirect: true,
-            redirectTo: "chronochills://login-callback",
-          },
-        });
-
-        if (error) {
-          toast({ variant: "destructive", title: "Error", description: error.message });
-          return;
-        }
-
-        if (data?.url) {
-          const { Browser } = await import("@capacitor/browser");
-          await Browser.open({ url: data.url, windowName: "_self" });
-        }
+        // Native: open the published web auth page (?native=1) inside the system
+        // browser. The web page completes Google sign-in via the Lovable managed
+        // broker, then shows a "Return to app" button that fires the
+        // chronochills:// deep link with the session tokens.
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: WEB_AUTH_URL, windowName: "_self" });
         return;
       }
 
-      // Web fallback: use the Lovable Cloud managed OAuth broker.
+      // Web: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: window.location.origin + (isNativeHandoffFlow ? "/auth?native=1" : ""),
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        });
+        toast({ variant: "destructive", title: "Error", description: error.message });
       }
     } catch (error: any) {
       toast({
@@ -95,6 +91,15 @@ const Auth = () => {
     }
   };
 
+  const handleReturnToApp = () => {
+    if (!nativeHandoff) return;
+    const { access_token, refresh_token } = nativeHandoff;
+    const deepLink = `chronochills://login-callback#access_token=${encodeURIComponent(
+      access_token,
+    )}&refresh_token=${encodeURIComponent(refresh_token)}`;
+    window.location.href = deepLink;
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <SEO
@@ -104,50 +109,69 @@ const Auth = () => {
       />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="glitch font-display text-4xl tracking-widest text-foreground mb-2" data-text="WELCOME">
-            WELCOME
+          <h1
+            className="glitch font-display text-4xl tracking-widest text-foreground mb-2"
+            data-text={nativeHandoff ? "SUCCESS" : "WELCOME"}
+          >
+            {nativeHandoff ? "SUCCESS" : "WELCOME"}
           </h1>
-          <p className="text-muted-foreground">Sign in or create an account to continue</p>
+          <p className="text-muted-foreground">
+            {nativeHandoff
+              ? "You're signed in. Tap below to return to the app."
+              : "Sign in or create an account to continue"}
+          </p>
         </div>
 
         <div className="bg-card/50 backdrop-blur-sm border p-8 rounded-xl shadow-lg flex flex-col gap-4">
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="animate-pulse">Connecting...</span>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true" focusable="false">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Sign in with Google
-              </>
-            )}
-          </Button>
+          {nativeHandoff ? (
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handleReturnToApp}
+            >
+              Sign-in successful — Return to app
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="animate-pulse">Connecting...</span>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true" focusable="false">
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Sign in with Google
+                </>
+              )}
+            </Button>
+          )}
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            If you don't have an account, one will be created automatically.
-          </p>
+          {!nativeHandoff && (
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              If you don't have an account, one will be created automatically.
+            </p>
+          )}
         </div>
       </div>
     </div>
