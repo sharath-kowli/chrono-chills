@@ -20,22 +20,60 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNativeHandoffFlow = searchParams.get("native") === "1";
+  // `handoff=1` is appended to the redirect_uri so we know the user has
+  // just completed a fresh Google sign-in (vs. landing on the page with a
+  // pre-existing/stale browser session).
+  const isPostOAuthReturn = searchParams.get("handoff") === "1";
 
   useEffect(() => {
+    let cancelled = false;
+
     const handleSession = (session: any) => {
       if (!session) return;
       if (isNativeHandoffFlow) {
-        // Don't navigate away — show the "Return to app" button instead.
-        setNativeHandoff({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
+        // Only treat this as a successful native handoff if the user just
+        // completed OAuth (handoff=1). Otherwise the session is stale from a
+        // previous browser visit and we must force a fresh sign-in.
+        if (isPostOAuthReturn) {
+          setNativeHandoff({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+        }
       } else {
         navigate("/");
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
+    (async () => {
+      if (isNativeHandoffFlow && !isPostOAuthReturn) {
+        // Native flow entry point: always start clean so the user can
+        // re-authenticate (e.g. after signing out in the app). Clear any
+        // lingering browser session, then immediately launch Google OAuth.
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // ignore
+        }
+        if (cancelled) return;
+        try {
+          await lovable.auth.signInWithOAuth("google", {
+            redirect_uri: window.location.origin + "/auth?native=1&handoff=1",
+            extraParams: { prompt: "select_account" },
+          });
+        } catch (err: any) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: err?.message || "Could not start Google sign-in.",
+          });
+        }
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!cancelled) handleSession(session);
+    })();
 
     const {
       data: { subscription },
@@ -46,8 +84,11 @@ const Auth = () => {
       handleSession(session);
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, isNativeHandoffFlow]);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, toast]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -63,10 +104,10 @@ const Auth = () => {
       }
 
       if (isNative) {
-        // Native: open the published web auth page (?native=1) inside the system
-        // browser. The web page completes Google sign-in via the Lovable managed
-        // broker, then shows a "Return to app" button that fires the
-        // chronochills:// deep link with the session tokens.
+        // Native: open the published web auth page (?native=1) inside the
+        // system browser. That page will clear any stale session and force a
+        // fresh Google sign-in, then show a "Return to app" button that fires
+        // the chronochills:// deep link with the session tokens.
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url: WEB_AUTH_URL, windowName: "_self" });
         return;
@@ -74,7 +115,7 @@ const Auth = () => {
 
       // Web: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + (isNativeHandoffFlow ? "/auth?native=1" : ""),
+        redirect_uri: window.location.origin,
       });
 
       if (error) {
@@ -108,71 +149,92 @@ const Auth = () => {
         path="/auth"
       />
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1
-            className="glitch font-display text-4xl tracking-widest text-foreground mb-2"
-            data-text={nativeHandoff ? "SUCCESS" : "WELCOME"}
-          >
-            {nativeHandoff ? "SUCCESS" : "WELCOME"}
-          </h1>
-          <p className="text-muted-foreground">
-            {nativeHandoff
-              ? "You're signed in. Tap below to return to the app."
-              : "Sign in or create an account to continue"}
-          </p>
-        </div>
+        {isNativeHandoffFlow && !nativeHandoff ? (
+          <>
+            <div className="text-center">
+              <h1
+                className="glitch font-display text-4xl tracking-widest text-foreground mb-2"
+                data-text="SIGNING IN"
+              >
+                SIGNING IN
+              </h1>
+              <p className="text-muted-foreground">
+                Redirecting you to Google to sign in…
+              </p>
+            </div>
+            <div className="bg-card/50 backdrop-blur-sm border p-8 rounded-xl shadow-lg flex flex-col items-center gap-4">
+              <span className="animate-pulse text-primary">Please wait…</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-center">
+              <h1
+                className="glitch font-display text-4xl tracking-widest text-foreground mb-2"
+                data-text={nativeHandoff ? "SUCCESS" : "WELCOME"}
+              >
+                {nativeHandoff ? "SUCCESS" : "WELCOME"}
+              </h1>
+              <p className="text-muted-foreground">
+                {nativeHandoff
+                  ? "You're signed in. Tap below to return to the app."
+                  : "Sign in or create an account to continue"}
+              </p>
+            </div>
 
-        <div className="bg-card/50 backdrop-blur-sm border p-8 rounded-xl shadow-lg flex flex-col gap-4">
-          {nativeHandoff ? (
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleReturnToApp}
-            >
-              Sign-in successful — Return to app
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="animate-pulse">Connecting...</span>
+            <div className="bg-card/50 backdrop-blur-sm border p-8 rounded-xl shadow-lg flex flex-col gap-4">
+              {nativeHandoff ? (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={handleReturnToApp}
+                >
+                  Sign-in successful — Return to app
+                </Button>
               ) : (
-                <>
-                  <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true" focusable="false">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  Sign in with Google
-                </>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full flex items-center justify-center gap-2 border-primary/20 hover:border-primary/50"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="animate-pulse">Connecting...</span>
+                  ) : (
+                    <>
+                      <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true" focusable="false">
+                        <path
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          fill="#34A853"
+                        />
+                        <path
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                          fill="#FBBC05"
+                        />
+                        <path
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                          fill="#EA4335"
+                        />
+                      </svg>
+                      Sign in with Google
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
-          )}
 
-          {!nativeHandoff && (
-            <p className="text-xs text-center text-muted-foreground mt-4">
-              If you don't have an account, one will be created automatically.
-            </p>
-          )}
-        </div>
+              {!nativeHandoff && (
+                <p className="text-xs text-center text-muted-foreground mt-4">
+                  If you don't have an account, one will be created automatically.
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
