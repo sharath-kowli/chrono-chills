@@ -378,6 +378,33 @@ const Watch = () => {
           style={{ border: "none" }}
         />
 
+        {/* Hidden prefetch iframes — silently buffer adjacent episodes so swiping is instant.
+            They are 1x1, off-screen, muted, no autoplay. Cloudflare will fetch the manifest +
+            initial segments, which the next page load reuses from cache. */}
+        {nextEpisode && (
+          <iframe
+            key={`prefetch-next-${nextEpisode.id}`}
+            src={`https://iframe.videodelivery.net/${nextEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
+            tabIndex={-1}
+            aria-hidden="true"
+            title="prefetch-next"
+            className="pointer-events-none"
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
+          />
+        )}
+        {prevEpisode && (
+          <iframe
+            key={`prefetch-prev-${prevEpisode.id}`}
+            src={`https://iframe.videodelivery.net/${prevEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
+            tabIndex={-1}
+            aria-hidden="true"
+            title="prefetch-prev"
+            className="pointer-events-none"
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
+          />
+        )}
+
+
         {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI) */}
         <button
           type="button"
