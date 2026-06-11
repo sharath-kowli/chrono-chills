@@ -204,42 +204,79 @@ const Watch = () => {
     }
   };
 
-  // Tap (without swipe) → toggle play/pause. Query SDK for real state.
-  const handleTapOverlay = (e: React.MouseEvent) => {
-    if (lastSwipeDistRef.current > 10) {
-      lastSwipeDistRef.current = 0;
-      e.preventDefault();
-      return;
-    }
+  // Tap handling: single tap = play/pause toggle; double tap on left/right edge = skip ±10s.
+  const lastTapRef = useRef<{ t: number; x: number } | null>(null);
+  const tapTimeoutRef = useRef<number | null>(null);
+  const DOUBLE_TAP_MS = 280;
+
+  const togglePlayPause = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    // Local state is the source of truth — the SDK's async `paused` getter races with rapid taps.
+    setPaused((prev) => {
+      try {
+        if (prev) {
+          const p = player.play();
+          if (p && typeof p.then === "function") p.catch(() => {});
+        } else {
+          player.pause();
+        }
+      } catch {
+        /* ignore */
+      }
+      return !prev;
+    });
+  }, []);
+
+  const skipBy = useCallback((seconds: number) => {
     const player = playerRef.current;
     if (!player) return;
     try {
-      // Cloudflare Stream SDK: `paused` is an async getter (Promise).
-      Promise.resolve(player.paused)
-        .then((isPaused: boolean) => {
-          if (isPaused) {
-            const p = player.play();
-            if (p && typeof p.then === "function") p.catch(() => {});
-            setPaused(false);
-          } else {
-            player.pause();
-            setPaused(true);
-          }
-        })
-        .catch(() => {
-          // Fallback to local state
-          if (paused) {
-            player.play();
-            setPaused(false);
-          } else {
-            player.pause();
-            setPaused(true);
-          }
-        });
+      Promise.resolve(player.currentTime).then((current: number) => {
+        const next = Math.max(0, (current || 0) + seconds);
+        player.currentTime = next;
+      });
     } catch {
-      // ignore
+      /* ignore */
     }
+  }, []);
+
+  const handleTapOverlay = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (lastSwipeDistRef.current > 10) {
+      lastSwipeDistRef.current = 0;
+      return;
+    }
+    const now = Date.now();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const last = lastTapRef.current;
+
+    if (last && now - last.t < DOUBLE_TAP_MS) {
+      // Double tap — cancel pending single-tap action, perform skip.
+      if (tapTimeoutRef.current) {
+        window.clearTimeout(tapTimeoutRef.current);
+        tapTimeoutRef.current = null;
+      }
+      lastTapRef.current = null;
+      const isRight = x > rect.width / 2;
+      skipBy(isRight ? 10 : -10);
+      toast(isRight ? "+10s" : "-10s", { duration: 600 });
+      return;
+    }
+
+    lastTapRef.current = { t: now, x };
+    if (tapTimeoutRef.current) window.clearTimeout(tapTimeoutRef.current);
+    tapTimeoutRef.current = window.setTimeout(() => {
+      tapTimeoutRef.current = null;
+      lastTapRef.current = null;
+      togglePlayPause();
+    }, DOUBLE_TAP_MS);
   };
+
+  // Cleanup pending tap timer on unmount
+  useEffect(() => () => {
+    if (tapTimeoutRef.current) window.clearTimeout(tapTimeoutRef.current);
+  }, []);
 
   if (!episode) {
     return (
@@ -340,6 +377,33 @@ const Watch = () => {
           allowFullScreen
           style={{ border: "none" }}
         />
+
+        {/* Hidden prefetch iframes — silently buffer adjacent episodes so swiping is instant.
+            They are 1x1, off-screen, muted, no autoplay. Cloudflare will fetch the manifest +
+            initial segments, which the next page load reuses from cache. */}
+        {nextEpisode && (
+          <iframe
+            key={`prefetch-next-${nextEpisode.id}`}
+            src={`https://iframe.videodelivery.net/${nextEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
+            tabIndex={-1}
+            aria-hidden="true"
+            title="prefetch-next"
+            className="pointer-events-none"
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
+          />
+        )}
+        {prevEpisode && (
+          <iframe
+            key={`prefetch-prev-${prevEpisode.id}`}
+            src={`https://iframe.videodelivery.net/${prevEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
+            tabIndex={-1}
+            aria-hidden="true"
+            title="prefetch-prev"
+            className="pointer-events-none"
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
+          />
+        )}
+
 
         {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI) */}
         <button
