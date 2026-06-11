@@ -20,22 +20,60 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNativeHandoffFlow = searchParams.get("native") === "1";
+  // `handoff=1` is appended to the redirect_uri so we know the user has
+  // just completed a fresh Google sign-in (vs. landing on the page with a
+  // pre-existing/stale browser session).
+  const isPostOAuthReturn = searchParams.get("handoff") === "1";
 
   useEffect(() => {
+    let cancelled = false;
+
     const handleSession = (session: any) => {
       if (!session) return;
       if (isNativeHandoffFlow) {
-        // Don't navigate away — show the "Return to app" button instead.
-        setNativeHandoff({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
+        // Only treat this as a successful native handoff if the user just
+        // completed OAuth (handoff=1). Otherwise the session is stale from a
+        // previous browser visit and we must force a fresh sign-in.
+        if (isPostOAuthReturn) {
+          setNativeHandoff({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+        }
       } else {
         navigate("/");
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => handleSession(session));
+    (async () => {
+      if (isNativeHandoffFlow && !isPostOAuthReturn) {
+        // Native flow entry point: always start clean so the user can
+        // re-authenticate (e.g. after signing out in the app). Clear any
+        // lingering browser session, then immediately launch Google OAuth.
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // ignore
+        }
+        if (cancelled) return;
+        try {
+          await lovable.auth.signInWithOAuth("google", {
+            redirect_uri: window.location.origin + "/auth?native=1&handoff=1",
+            extraParams: { prompt: "select_account" },
+          });
+        } catch (err: any) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: err?.message || "Could not start Google sign-in.",
+          });
+        }
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!cancelled) handleSession(session);
+    })();
 
     const {
       data: { subscription },
@@ -46,8 +84,11 @@ const Auth = () => {
       handleSession(session);
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, isNativeHandoffFlow]);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, toast]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -63,10 +104,10 @@ const Auth = () => {
       }
 
       if (isNative) {
-        // Native: open the published web auth page (?native=1) inside the system
-        // browser. The web page completes Google sign-in via the Lovable managed
-        // broker, then shows a "Return to app" button that fires the
-        // chronochills:// deep link with the session tokens.
+        // Native: open the published web auth page (?native=1) inside the
+        // system browser. That page will clear any stale session and force a
+        // fresh Google sign-in, then show a "Return to app" button that fires
+        // the chronochills:// deep link with the session tokens.
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url: WEB_AUTH_URL, windowName: "_self" });
         return;
@@ -74,7 +115,7 @@ const Auth = () => {
 
       // Web: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + (isNativeHandoffFlow ? "/auth?native=1" : ""),
+        redirect_uri: window.location.origin,
       });
 
       if (error) {
