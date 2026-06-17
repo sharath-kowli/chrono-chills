@@ -168,7 +168,7 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="border-border bg-card sm:max-w-md">
+      <DialogContent className="border-border bg-card sm:max-w-md max-h-[90dvh] overflow-y-auto top-[2dvh] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
             <Lock className="h-8 w-8 text-primary" />
@@ -330,6 +330,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                     setCredError('');
                   }}
                   className="bg-background"
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+                  }}
                   disabled={isCheckoutLoading || credLoading}
                 />
                 <label htmlFor="unlock-password-input" className="sr-only">
@@ -348,6 +352,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                       setCredError('');
                     }}
                     className="flex-1 bg-background"
+                    onFocus={(e) => {
+                      const el = e.currentTarget;
+                      setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && handleCredentialsUnlock()}
                     disabled={isCheckoutLoading || credLoading}
                   />
