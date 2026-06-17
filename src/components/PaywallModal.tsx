@@ -305,6 +305,70 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
               </div>
             )}
           </div>
+
+          <div className="border-t border-border pt-4">
+            {!showCredentialsInput ? (
+              <button
+                onClick={() => setShowCredentialsInput(true)}
+                disabled={isCheckoutLoading}
+                className="flex w-full items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                <KeyRound className="h-4 w-4" />
+                Have login credentials? Sign in here
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <label htmlFor="unlock-username-input" className="sr-only">
+                  Username
+                </label>
+                <Input
+                  id="unlock-username-input"
+                  aria-label="Username"
+                  placeholder="Username"
+                  autoComplete="username"
+                  value={credUsername}
+                  onChange={(e) => {
+                    setCredUsername(e.target.value);
+                    setCredError('');
+                  }}
+                  className="bg-background"
+                  disabled={isCheckoutLoading || credLoading}
+                />
+                <label htmlFor="unlock-password-input" className="sr-only">
+                  Password
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="unlock-password-input"
+                    aria-label="Password"
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    value={credPassword}
+                    onChange={(e) => {
+                      setCredPassword(e.target.value);
+                      setCredError('');
+                    }}
+                    className="flex-1 bg-background"
+                    onKeyDown={(e) => e.key === 'Enter' && handleCredentialsUnlock()}
+                    disabled={isCheckoutLoading || credLoading}
+                  />
+                  <Button
+                    onClick={handleCredentialsUnlock}
+                    variant="secondary"
+                    disabled={isCheckoutLoading || credLoading}
+                  >
+                    {credLoading ? 'Unlocking…' : 'Unlock'}
+                  </Button>
+                </div>
+                {credError && (
+                  <p className="text-sm text-destructive">{credError}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+
           
           <p className="text-center text-xs text-muted-foreground">
             By subscribing, you agree to our Terms of Service
