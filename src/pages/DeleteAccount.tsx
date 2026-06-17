@@ -25,10 +25,22 @@ export default function DeleteAccount() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth", { replace: true });
+        return;
+      }
+      setSession(session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!s) {
+        navigate("/auth", { replace: true });
+        return;
+      }
+      setSession(s);
+    });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleDelete = async () => {
     setLoading(true);
@@ -93,21 +105,15 @@ export default function DeleteAccount() {
             <Button variant="outline" onClick={() => navigate(-1)} disabled={loading}>
               Cancel
             </Button>
-            {session ? (
-              <Button
-                variant="destructive"
-                onClick={() => setConfirmOpen(true)}
-                disabled={loading}
-                className="gap-2"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Delete my account
-              </Button>
-            ) : (
-              <Button asChild variant="destructive" className="gap-2">
-                <Link to="/auth">Sign in to delete</Link>
-              </Button>
-            )}
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmOpen(true)}
+              disabled={loading || !session}
+              className="gap-2"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Delete my account
+            </Button>
           </div>
         </div>
       </main>
