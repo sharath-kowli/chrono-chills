@@ -330,6 +330,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                     setCredError('');
                   }}
                   className="bg-background"
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+                  }}
                   disabled={isCheckoutLoading || credLoading}
                 />
                 <label htmlFor="unlock-password-input" className="sr-only">
