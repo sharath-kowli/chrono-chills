@@ -42,23 +42,19 @@ serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
+    // Auth is OPTIONAL for this endpoint. If the caller is signed in we will
+    // additionally grant them a lifetime entitlement (so the unlock survives
+    // device changes). If not, validating the shared credentials alone is
+    // enough — the client stores a local unlock flag.
+    let user: { id: string; email: string | null } | null = null;
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await admin.auth.getUser(token);
+      if (userData.user?.id) {
+        user = { id: userData.user.id, email: userData.user.email ?? null };
+      }
     }
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await admin.auth.getUser(token);
-    if (userError || !userData.user?.email) {
-      log("auth failed", userError?.message);
-      return new Response(JSON.stringify({ error: "Authentication required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const user = userData.user;
 
     const body = await req.json().catch(() => ({}));
     const rawUser = typeof body?.username === "string" ? body.username : "";
@@ -76,40 +72,42 @@ serve(async (req) => {
     const userMatch = safeEqual(username, expectedUser);
     const passMatch = safeEqual(password, expectedPass);
     if (!userMatch || !passMatch) {
-      log("invalid credentials", { userId: user.id });
+      log("invalid credentials", { userId: user?.id ?? "anon" });
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Grant lifetime entitlement (idempotent).
-    const { data: existing } = await admin
-      .from("entitlements")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("plan", "lifetime")
-      .eq("status", "active")
-      .maybeSingle();
+    // If signed in, also grant lifetime entitlement (idempotent).
+    if (user) {
+      const { data: existing } = await admin
+        .from("entitlements")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("plan", "lifetime")
+        .eq("status", "active")
+        .maybeSingle();
 
-    if (!existing) {
-      const { error: insertErr } = await admin.from("entitlements").insert({
-        user_id: user.id,
-        email: user.email,
-        stripe_customer_id: "unlock_credentials",
-        plan: "lifetime",
-        status: "active",
-      });
-      if (insertErr) {
-        log("entitlement insert error", insertErr.message);
-        return new Response(JSON.stringify({ error: "Unable to unlock access" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!existing) {
+        const { error: insertErr } = await admin.from("entitlements").insert({
+          user_id: user.id,
+          email: user.email,
+          stripe_customer_id: "unlock_credentials",
+          plan: "lifetime",
+          status: "active",
         });
+        if (insertErr) {
+          log("entitlement insert error", insertErr.message);
+          return new Response(JSON.stringify({ error: "Unable to unlock access" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
-    log("unlocked", { userId: user.id });
+    log("unlocked", { userId: user?.id ?? "anon" });
     return new Response(JSON.stringify({ success: true, plan: "lifetime" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

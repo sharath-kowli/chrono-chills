@@ -127,11 +127,7 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     setCredLoading(true);
     setCredError('');
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = '/auth';
-        return;
-      }
+      // No sign-in required — credentials themselves are the proof of access.
       const { data, error } = await supabase.functions.invoke('unlock-with-credentials', {
         body: { username, password },
       });
@@ -139,6 +135,8 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
         setCredError(data?.error || 'Invalid credentials. Please try again.');
         return;
       }
+      const { setCredentialsUnlocked } = await import('@/lib/unlock');
+      setCredentialsUnlocked();
       await checkSubscription();
       setCredUsername('');
       setCredPassword('');

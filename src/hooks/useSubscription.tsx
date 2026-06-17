@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isCredentialsUnlocked } from "@/lib/unlock";
 
 interface SubscriptionState {
   subscribed: boolean;
@@ -29,6 +30,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const checkSubscription = useCallback(async () => {
     try {
+      // Credentials-based unlock bypasses Supabase auth entirely.
+      if (isCredentialsUnlocked()) {
+        setSubscribed(true);
+        setLifetime(true);
+        setSubscriptionEnd(null);
+        setLoading(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setSubscribed(false);
@@ -69,7 +79,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Check on mount and auth changes
+  // Check on mount, auth changes, and credentials-unlock events
   useEffect(() => {
     checkSubscription();
 
@@ -77,7 +87,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       checkSubscription();
     });
 
-    return () => subscription.unsubscribe();
+    const onUnlock = () => checkSubscription();
+    window.addEventListener("cc-credentials-unlock", onUnlock);
+    window.addEventListener("storage", onUnlock);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("cc-credentials-unlock", onUnlock);
+      window.removeEventListener("storage", onUnlock);
+    };
   }, [checkSubscription]);
 
   // Periodic refresh every 60 seconds
