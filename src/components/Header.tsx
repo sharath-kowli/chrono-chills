@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { isCredentialsUnlocked, clearCredentialsUnlocked } from "@/lib/unlock";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,13 +21,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 
 export function Header() {
   const [session, setSession] = useState<any>(null);
   const [credUnlocked, setCredUnlocked] = useState<boolean>(isCredentialsUnlocked());
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,13 +76,16 @@ export function Header() {
     }
   };
 
-  const showSignOut = !!session || credUnlocked;
-  const showDelete = !!session;
+  const isAuthed = !!session || credUnlocked;
+  const user = session?.user;
+  const meta = user?.user_metadata ?? {};
+  const avatarUrl: string | undefined = meta.avatar_url || meta.picture;
+  const displayName: string = meta.full_name || meta.name || user?.email || "Account";
+  const initial = (displayName?.trim()?.[0] || "U").toUpperCase();
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between px-4">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
           <div className="relative">
             <Radio className="h-6 w-6 text-primary flicker" />
@@ -87,43 +98,71 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Right side */}
         <div className="flex items-center gap-4">
           <Link to="/pricing" className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
             Pricing
           </Link>
           <div className="h-4 w-px bg-border hidden sm:block"></div>
 
-          {showDelete && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive">
-                  <Trash2 className="w-4 h-4" />
-                  <span className="hidden sm:inline-block">Delete</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This permanently deletes your account and all associated data — profile, watch history, bookmarks, entitlements, and roles. This cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Delete account
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+          {isAuthed ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    aria-label="Account menu"
+                    className="rounded-full ring-1 ring-border hover:ring-primary/60 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <Avatar className="h-9 w-9">
+                      {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
+                      <AvatarFallback className="bg-muted text-foreground">
+                        {user ? initial : <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {user && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{displayName}</div>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut} className="gap-2 cursor-pointer">
+                    <LogOut className="w-4 h-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                  {!!session && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setDeleteOpen(true);
+                      }}
+                      className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete account
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-          {showSignOut ? (
-            <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline-block">Sign Out</span>
-            </Button>
+              <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently deletes your account and all associated data — profile, watch history, bookmarks, entitlements, and roles. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           ) : (
             <Button variant="default" size="sm" asChild className="gap-2 focus:ring-0">
               <Link to="/auth">
