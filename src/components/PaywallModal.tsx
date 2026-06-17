@@ -1,4 +1,4 @@
-import { Lock, Zap, Ticket, Crown } from 'lucide-react';
+import { Lock, Zap, Ticket, Crown, KeyRound } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
