@@ -1,4 +1,4 @@
-import { Lock, Zap, Ticket, Crown } from 'lucide-react';
+import { Lock, Zap, Ticket, Crown, KeyRound } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,11 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('lifetime');
   const [redeemLoading, setRedeemLoading] = useState(false);
+  const [showCredentialsInput, setShowCredentialsInput] = useState(false);
+  const [credUsername, setCredUsername] = useState('');
+  const [credPassword, setCredPassword] = useState('');
+  const [credError, setCredError] = useState('');
+  const [credLoading, setCredLoading] = useState(false);
   const { checkSubscription } = useSubscription();
   const { toast } = useToast();
 
@@ -111,6 +116,43 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     }
   };
 
+  const handleCredentialsUnlock = async () => {
+    if (credLoading) return;
+    const username = credUsername.trim();
+    const password = credPassword;
+    if (!username || !password) {
+      setCredError('Please enter both username and password.');
+      return;
+    }
+    setCredLoading(true);
+    setCredError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/auth';
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('unlock-with-credentials', {
+        body: { username, password },
+      });
+      if (error || !data?.success) {
+        setCredError(data?.error || 'Invalid credentials. Please try again.');
+        return;
+      }
+      await checkSubscription();
+      setCredUsername('');
+      setCredPassword('');
+      setShowCredentialsInput(false);
+      onUnlock?.();
+      onOpenChange(false);
+      window.location.href = '/payment-success';
+    } catch {
+      setCredError('Unable to unlock. Please try again.');
+    } finally {
+      setCredLoading(false);
+    }
+  };
+
   const handleClose = (isOpen: boolean) => {
     if (isCheckoutLoading) return; // prevent closing while loading
     if (!isOpen) {
@@ -118,6 +160,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
       setRedeemCode('');
       setRedeemError('');
       setCheckoutError(null);
+      setShowCredentialsInput(false);
+      setCredUsername('');
+      setCredPassword('');
+      setCredError('');
     }
     onOpenChange(isOpen);
   };
@@ -259,6 +305,70 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
               </div>
             )}
           </div>
+
+          <div className="border-t border-border pt-4">
+            {!showCredentialsInput ? (
+              <button
+                onClick={() => setShowCredentialsInput(true)}
+                disabled={isCheckoutLoading}
+                className="flex w-full items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                <KeyRound className="h-4 w-4" />
+                Have login credentials? Sign in here
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <label htmlFor="unlock-username-input" className="sr-only">
+                  Username
+                </label>
+                <Input
+                  id="unlock-username-input"
+                  aria-label="Username"
+                  placeholder="Username"
+                  autoComplete="username"
+                  value={credUsername}
+                  onChange={(e) => {
+                    setCredUsername(e.target.value);
+                    setCredError('');
+                  }}
+                  className="bg-background"
+                  disabled={isCheckoutLoading || credLoading}
+                />
+                <label htmlFor="unlock-password-input" className="sr-only">
+                  Password
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="unlock-password-input"
+                    aria-label="Password"
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    value={credPassword}
+                    onChange={(e) => {
+                      setCredPassword(e.target.value);
+                      setCredError('');
+                    }}
+                    className="flex-1 bg-background"
+                    onKeyDown={(e) => e.key === 'Enter' && handleCredentialsUnlock()}
+                    disabled={isCheckoutLoading || credLoading}
+                  />
+                  <Button
+                    onClick={handleCredentialsUnlock}
+                    variant="secondary"
+                    disabled={isCheckoutLoading || credLoading}
+                  >
+                    {credLoading ? 'Unlocking…' : 'Unlock'}
+                  </Button>
+                </div>
+                {credError && (
+                  <p className="text-sm text-destructive">{credError}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+
           
           <p className="text-center text-xs text-muted-foreground">
             By subscribing, you agree to our Terms of Service
