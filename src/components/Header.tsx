@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { isCredentialsUnlocked, clearCredentialsUnlocked } from "@/lib/unlock";
 
 export function Header() {
   const [session, setSession] = useState<any>(null);
+  const [credUnlocked, setCredUnlocked] = useState<boolean>(isCredentialsUnlocked());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,13 +21,24 @@ export function Header() {
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    const sync = () => setCredUnlocked(isCredentialsUnlocked());
+    window.addEventListener("cc-credentials-unlock", sync);
+    window.addEventListener("storage", sync);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("cc-credentials-unlock", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
   const handleSignOut = async () => {
+    clearCredentialsUnlocked();
     await supabase.auth.signOut();
     window.location.href = "/";
   };
+
+  const showSignOut = !!session || credUnlocked;
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
