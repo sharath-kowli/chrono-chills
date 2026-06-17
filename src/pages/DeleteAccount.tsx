@@ -57,6 +57,7 @@ export default function DeleteAccount() {
       <SEO
         title="Delete Account | Chrono Chills"
         description="Permanently delete your Chrono Chills account and all associated data."
+        path="/delete-account"
       />
       <Header />
       <main className="container mx-auto max-w-2xl px-4 pt-28 pb-16">
