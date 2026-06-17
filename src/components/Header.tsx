@@ -1,4 +1,4 @@
-import { Radio, LogOut, User, Trash2 } from "lucide-react";
+import { Radio, LogOut, User, Trash2, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
@@ -110,7 +110,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <button
                     aria-label="Account menu"
-                    className="rounded-full ring-1 ring-border hover:ring-primary/60 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="group flex items-center gap-1 rounded-full pr-1.5 ring-1 ring-border hover:ring-primary/60 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <Avatar className="h-9 w-9">
                       {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
@@ -118,6 +118,7 @@ export function Header() {
                         {user ? initial : <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
