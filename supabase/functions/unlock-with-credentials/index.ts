@@ -79,33 +79,35 @@ serve(async (req) => {
       });
     }
 
-    // Grant lifetime entitlement (idempotent).
-    const { data: existing } = await admin
-      .from("entitlements")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("plan", "lifetime")
-      .eq("status", "active")
-      .maybeSingle();
+    // If signed in, also grant lifetime entitlement (idempotent).
+    if (user) {
+      const { data: existing } = await admin
+        .from("entitlements")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("plan", "lifetime")
+        .eq("status", "active")
+        .maybeSingle();
 
-    if (!existing) {
-      const { error: insertErr } = await admin.from("entitlements").insert({
-        user_id: user.id,
-        email: user.email,
-        stripe_customer_id: "unlock_credentials",
-        plan: "lifetime",
-        status: "active",
-      });
-      if (insertErr) {
-        log("entitlement insert error", insertErr.message);
-        return new Response(JSON.stringify({ error: "Unable to unlock access" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!existing) {
+        const { error: insertErr } = await admin.from("entitlements").insert({
+          user_id: user.id,
+          email: user.email,
+          stripe_customer_id: "unlock_credentials",
+          plan: "lifetime",
+          status: "active",
         });
+        if (insertErr) {
+          log("entitlement insert error", insertErr.message);
+          return new Response(JSON.stringify({ error: "Unable to unlock access" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
-    log("unlocked", { userId: user.id });
+    log("unlocked", { userId: user?.id ?? "anon" });
     return new Response(JSON.stringify({ success: true, plan: "lifetime" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
