@@ -27,14 +27,14 @@ export default function DeleteAccount() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        navigate("/auth?redirect=/delete-account", { replace: true });
+        navigate("/auth", { replace: true });
         return;
       }
       setSession(session);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!s) {
-        navigate("/auth?redirect=/delete-account", { replace: true });
+        navigate("/auth", { replace: true });
         return;
       }
       setSession(s);
