@@ -63,7 +63,7 @@ export function Header() {
           </Link>
           <div className="h-4 w-px bg-border hidden sm:block"></div>
 
-          {session ? (
+          {showSignOut ? (
             <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline-block">Sign Out</span>
