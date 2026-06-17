@@ -30,6 +30,11 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('lifetime');
   const [redeemLoading, setRedeemLoading] = useState(false);
+  const [showCredentialsInput, setShowCredentialsInput] = useState(false);
+  const [credUsername, setCredUsername] = useState('');
+  const [credPassword, setCredPassword] = useState('');
+  const [credError, setCredError] = useState('');
+  const [credLoading, setCredLoading] = useState(false);
   const { checkSubscription } = useSubscription();
   const { toast } = useToast();
 
