@@ -25,10 +25,22 @@ export default function DeleteAccount() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth?redirect=/delete-account", { replace: true });
+        return;
+      }
+      setSession(session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!s) {
+        navigate("/auth?redirect=/delete-account", { replace: true });
+        return;
+      }
+      setSession(s);
+    });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleDelete = async () => {
     setLoading(true);
