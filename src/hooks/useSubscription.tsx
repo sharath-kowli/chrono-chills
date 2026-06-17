@@ -79,7 +79,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Check on mount and auth changes
+  // Check on mount, auth changes, and credentials-unlock events
   useEffect(() => {
     checkSubscription();
 
@@ -87,7 +87,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       checkSubscription();
     });
 
-    return () => subscription.unsubscribe();
+    const onUnlock = () => checkSubscription();
+    window.addEventListener("cc-credentials-unlock", onUnlock);
+    window.addEventListener("storage", onUnlock);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("cc-credentials-unlock", onUnlock);
+      window.removeEventListener("storage", onUnlock);
+    };
   }, [checkSubscription]);
 
   // Periodic refresh every 60 seconds
