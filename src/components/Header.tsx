@@ -1,9 +1,21 @@
-import { Radio, LogOut, User } from "lucide-react";
+import { Radio, LogOut, User, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { isCredentialsUnlocked, clearCredentialsUnlocked } from "@/lib/unlock";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 export function Header() {
   const [session, setSession] = useState<any>(null);
