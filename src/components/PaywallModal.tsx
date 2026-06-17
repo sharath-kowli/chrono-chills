@@ -352,6 +352,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
                       setCredError('');
                     }}
                     className="flex-1 bg-background"
+                    onFocus={(e) => {
+                      const el = e.currentTarget;
+                      setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && handleCredentialsUnlock()}
                     disabled={isCheckoutLoading || credLoading}
                   />
