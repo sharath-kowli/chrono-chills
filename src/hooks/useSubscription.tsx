@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isCredentialsUnlocked } from "@/lib/unlock";
 
 interface SubscriptionState {
   subscribed: boolean;
