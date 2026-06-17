@@ -1,99 +1,44 @@
-## Mobile app improvements
+## Add Username + Password Premium Unlock
 
-Six changes scoped to the Capacitor (Android/iOS) native app. Items 4–6 (tap-to-pause, swipe navigation, auto-advance) will also benefit the mobile web experience since they're implemented in shared React code.
+A new way to unlock premium, sitting next to the existing "Redeem code" link in the Paywall modal. Existing redemption code flow is left fully intact.
 
----
+### Credentials
+- Username: `GooglePlayAdmin`
+- Password: `2026Merirosvo1108$`
 
-### 1. Fix sign-in 404 on native app
+Both stored as **backend secrets** (`PREMIUM_UNLOCK_USERNAME`, `PREMIUM_UNLOCK_PASSWORD`), never shipped to the client. Comparison happens inside a new edge function.
 
-**Cause:** The Capacitor app currently bundles `dist/` and runs from `capacitor://localhost` (or `http://localhost`). When Google OAuth redirects back to `window.location.origin`, that origin doesn't exist on the public web → 404 inside the in-app browser.
+### What changes
 
-**Fix:** Point Capacitor at the live site so the app runs against `https://chronochills.com`. This makes `window.location.origin` resolvable and OAuth works exactly like the web build.
+**1. New secrets (2)**
+- `PREMIUM_UNLOCK_USERNAME` = `GooglePlayAdmin`
+- `PREMIUM_UNLOCK_PASSWORD` = `2026Merirosvo1108$`
 
-```ts
-// capacitor.config.ts
-server: {
-  url: 'https://chronochills.com',
-  cleartext: false,
-  androidScheme: 'https',
-}
-```
+**2. New edge function: `unlock-with-credentials`**
+- Requires the user to be signed in (same as redeem-code).
+- Reads `{ username, password }` from request body, trims, validates length.
+- Compares against the two secrets using constant-time-style equality.
+- On match: inserts a lifetime entitlement for `auth.uid()` into the existing `entitlements` table (idempotent — skips if an active lifetime entitlement already exists), using `stripe_customer_id = "unlock_credentials"` as the marker.
+- Returns `{ success: true, plan: "lifetime" }` or `{ error: "Invalid credentials" }` (400).
+- Mirrors `redeem-code`'s CORS, auth, and error patterns. Does **not** touch the `redemption_codes` table.
 
-Trade-off: the app requires network on launch (which it already does for streaming video).
+**3. PaywallModal UI (`src/components/PaywallModal.tsx`)**
+Below the existing "Have a code? Redeem here" button, add a second collapsible link: **"Have login credentials? Sign in here"**.
+- When clicked, reveals two inputs (Username, Password) and an "Unlock" button.
+- Submitting calls `supabase.functions.invoke('unlock-with-credentials', { body: { username, password } })`.
+- On success: calls `checkSubscription()`, closes modal, navigates to `/payment-success` (same as redeem flow).
+- On failure: shows inline error "Invalid credentials".
+- If user not signed in: redirects to `/auth` (same pattern as redeem).
+- Independent state (`showCredentialsInput`, `credUsername`, `credPassword`, `credError`, `credLoading`) — does not touch redeem-code state.
 
----
+**4. No database schema change.** Reuses existing `entitlements` table and existing `useSubscription` hook, so premium unlock takes effect immediately across the app (Episodes 13–25, etc.) exactly like Stripe and redemption codes do today.
 
-### 2. Hardware back button → home, not exit
+### Out of scope (unchanged)
+- `redemption_codes` table, `redeem-code` edge function, MERIROSVO codes — completely untouched.
+- Stripe checkout, Google sign-in, episode lock threshold (≥13).
+- No new admin UI; credentials are managed via secrets only.
 
-Install `@capacitor/app` and add a global listener: if router can go back, pop; if at `/auth` or any non-root route, navigate to `/`; only exit when already at `/`.
-
-New file: `src/hooks/useAndroidBackButton.ts`, wired into `App.tsx`.
-
----
-
-### 3. Edge-to-edge / display-cutout adaptive layout (Android)
-
-- `android/app/src/main/res/values/styles.xml` — add:
-  - `<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>`
-  - translucent status bar
-- Install `@capacitor/status-bar`, set overlay + transparent on app start.
-- Add `viewport-fit=cover` to `index.html` meta viewport.
-- Use `env(safe-area-inset-*)` in player overlays so the back arrow / episode info don't sit under the notch.
-
----
-
-### 4. Tap-to-pause / tap-to-resume
-
-Cloudflare's iframe currently captures all taps. Switch to a clean custom overlay:
-
-- Iframe src adds `&controls=false&muted=false`.
-- A full-size transparent `<button>` overlay sits above the iframe (`pointer-events-auto`); top/bottom UI overlays stay above that with their own `pointer-events-auto` regions.
-- Single tap toggles `player.play()` / `player.pause()` via the Stream SDK already loaded.
-- A center play-icon pulse appears briefly when paused.
-
----
-
-### 5. Instagram Reels-style vertical swipe between episodes
-
-Rework `Watch.tsx` into a vertical snap pager:
-
-- Touch handlers (`touchstart` / `touchmove` / `touchend`) on the player container detect a vertical swipe (>60px, faster than 0.2 px/ms).
-- Swipe up → next episode (paywall if locked); swipe down → previous episode.
-- If already at episode 0 and user swipes down, animate a ~40px rubber-band drag with snap-back and a brief "First episode" toast/badge.
-- Last episode: existing behavior unchanged (paywall or no-op).
-- Transition: short `translateY` slide animation (≈250ms) before route change so it feels continuous like Reels.
-- Desktop/non-touch behavior unchanged — Prev/Next buttons stay.
-
----
-
-### 6. Auto-advance on episode end
-
-The `ended` handler already navigates to the next episode. Update it to use the same slide-up transition from item 5 so it feels like a Reels scroll, instead of an abrupt route change. Existing fullscreen-exit logic preserved.
-
----
-
-### Technical summary
-
-**Files changed:**
-- `capacitor.config.ts` — server.url to chronochills.com
-- `android/app/src/main/res/values/styles.xml` — cutout + translucent status bar
-- `index.html` — `viewport-fit=cover`
-- `src/App.tsx` — mount back-button hook, init status bar
-- `src/pages/Watch.tsx` — swipe pager, tap overlay, transition animation, safe-area padding
-- `src/pages/Auth.tsx` — ensure back navigates to `/`
-- `src/index.css` — safe-area utility, rubber-band keyframe
-
-**New files:**
-- `src/hooks/useAndroidBackButton.ts`
-- `src/hooks/useSwipeNavigation.ts` (touch gesture logic, reused)
-
-**Packages added:** `@capacitor/app`, `@capacitor/status-bar`
-
-**After merge, you will need to run locally:**
-```bash
-npm install
-npx cap sync android
-npx cap run android   # or open in Android Studio and rebuild
-```
-
-No database, RLS, or edge-function changes.
+### Files touched
+- New: `supabase/functions/unlock-with-credentials/index.ts`
+- Edited: `src/components/PaywallModal.tsx` (add second collapsible section + handler)
+- Secrets added (via secret prompt): `PREMIUM_UNLOCK_USERNAME`, `PREMIUM_UNLOCK_PASSWORD`
