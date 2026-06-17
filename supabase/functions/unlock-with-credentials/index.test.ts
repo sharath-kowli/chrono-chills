@@ -45,7 +45,7 @@ async function call(opts: {
 }
 
 // Create a throwaway authenticated user and return its access token + uid.
-async function createTestUser(): Promise<{ token: string; userId: string; email: string; client: ReturnType<typeof createClient> }> {
+async function createTestUser(): Promise<{ token: string; userId: string; email: string; client: any }> {
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -62,7 +62,7 @@ async function createTestUser(): Promise<{ token: string; userId: string; email:
 }
 
 // Count active lifetime entitlements visible to this user (RLS scopes to own rows).
-async function countLifetimeEntitlements(client: ReturnType<typeof createClient>, userId: string): Promise<number> {
+async function countLifetimeEntitlements(client: any, userId: string): Promise<number> {
   const { data, error } = await client
     .from("entitlements")
     .select("id, plan, status, stripe_customer_id")
