@@ -116,67 +116,80 @@ Deno.test("rejects request with invalid Authorization token", async () => {
   assertEquals(json.error, "Authentication required");
 });
 
-Deno.test("authenticated: empty body is rejected as invalid credentials", async () => {
-  const { token } = await createTestUser();
-  const { status, json } = await call({ token, body: {} });
-  assertEquals(status, 400);
-  assertEquals(json.error, "Invalid credentials");
+Deno.test({
+  name: "authenticated: empty body is rejected as invalid credentials",
+  ignore: authedSkip,
+  fn: async () => {
+    const user = (await createTestUser())!;
+    const { status, json } = await call({ token: user.token, body: {} });
+    assertEquals(status, 400);
+    assertEquals(json.error, "Invalid credentials");
+  },
 });
 
-Deno.test("authenticated: WRONG credentials are rejected and grant NO entitlement", async () => {
-  const { token, userId, client } = await createTestUser();
+Deno.test({
+  name: "authenticated: WRONG credentials are rejected and grant NO entitlement",
+  ignore: authedSkip,
+  fn: async () => {
+    const user = (await createTestUser())!;
+    const before = await countLifetimeEntitlements(user.client, user.userId);
+    assertEquals(before, 0, "new user should have 0 lifetime entitlements");
 
-  const before = await countLifetimeEntitlements(client, userId);
-  assertEquals(before, 0, "new user should have 0 lifetime entitlements");
+    const { status, json } = await call({
+      token: user.token,
+      body: { username: "wrong-user", password: "wrong-password!" },
+    });
+    assertEquals(status, 400);
+    assertEquals(json.error, "Invalid credentials");
 
-  const { status, json } = await call({
-    token,
-    body: { username: "wrong-user", password: "wrong-password!" },
-  });
-  assertEquals(status, 400);
-  assertEquals(json.error, "Invalid credentials");
-
-  const after = await countLifetimeEntitlements(client, userId);
-  assertEquals(after, 0, "wrong credentials must NOT create an entitlement");
+    const after = await countLifetimeEntitlements(user.client, user.userId);
+    assertEquals(after, 0, "wrong credentials must NOT create an entitlement");
+  },
 });
 
-Deno.test("authenticated: username right but password wrong is rejected", async () => {
-  const { token, userId, client } = await createTestUser();
-  const { status, json } = await call({
-    token,
-    body: { username: "GooglePlayAdmin", password: "definitely-wrong" },
-  });
-  assertEquals(status, 400);
-  assertEquals(json.error, "Invalid credentials");
-  assertEquals(await countLifetimeEntitlements(client, userId), 0);
+Deno.test({
+  name: "authenticated: username right but password wrong is rejected",
+  ignore: authedSkip,
+  fn: async () => {
+    const user = (await createTestUser())!;
+    const { status, json } = await call({
+      token: user.token,
+      body: { username: "GooglePlayAdmin", password: "definitely-wrong" },
+    });
+    assertEquals(status, 400);
+    assertEquals(json.error, "Invalid credentials");
+    assertEquals(await countLifetimeEntitlements(user.client, user.userId), 0);
+  },
 });
 
 // Happy-path test. Requires the test runner to expose the same credentials
-// the edge function uses. We never hardcode them.
+// the edge function uses (PREMIUM_UNLOCK_USERNAME / PREMIUM_UNLOCK_PASSWORD).
+// We never hardcode them in source.
 const happyUser = Deno.env.get("PREMIUM_UNLOCK_USERNAME");
 const happyPass = Deno.env.get("PREMIUM_UNLOCK_PASSWORD");
 
 Deno.test({
   name: "authenticated: CORRECT credentials grant a lifetime entitlement (idempotent)",
-  ignore: !happyUser || !happyPass,
+  ignore: authedSkip || !happyUser || !happyPass,
   fn: async () => {
-    const { token, userId, client } = await createTestUser();
-    assertEquals(await countLifetimeEntitlements(client, userId), 0);
+    const user = (await createTestUser())!;
+    assertEquals(await countLifetimeEntitlements(user.client, user.userId), 0);
 
-    const first = await call({ token, body: { username: happyUser, password: happyPass } });
+    const first = await call({ token: user.token, body: { username: happyUser, password: happyPass } });
     assertEquals(first.status, 200, `first call body: ${JSON.stringify(first.json)}`);
     assertEquals(first.json.success, true);
     assertEquals(first.json.plan, "lifetime");
 
-    const afterFirst = await countLifetimeEntitlements(client, userId);
+    const afterFirst = await countLifetimeEntitlements(user.client, user.userId);
     assertEquals(afterFirst, 1, "first successful unlock should create exactly 1 lifetime entitlement");
 
     // Second call must be idempotent: still success, still only one row.
-    const second = await call({ token, body: { username: happyUser, password: happyPass } });
+    const second = await call({ token: user.token, body: { username: happyUser, password: happyPass } });
     assertEquals(second.status, 200);
     assertEquals(second.json.success, true);
 
-    const afterSecond = await countLifetimeEntitlements(client, userId);
+    const afterSecond = await countLifetimeEntitlements(user.client, user.userId);
     assertEquals(afterSecond, 1, "second unlock must not create a duplicate entitlement");
   },
 });
+
