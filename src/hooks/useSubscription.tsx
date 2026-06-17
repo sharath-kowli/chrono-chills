@@ -30,6 +30,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const checkSubscription = useCallback(async () => {
     try {
+      // Credentials-based unlock bypasses Supabase auth entirely.
+      if (isCredentialsUnlocked()) {
+        setSubscribed(true);
+        setLifetime(true);
+        setSubscriptionEnd(null);
+        setLoading(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setSubscribed(false);
