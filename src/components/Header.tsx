@@ -137,22 +137,3 @@ export function Header() {
     </header>
   );
 }
-
-          {showSignOut ? (
-            <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline-block">Sign Out</span>
-            </Button>
-          ) : (
-            <Button variant="default" size="sm" asChild className="gap-2 focus:ring-0">
-              <Link to="/auth">
-                <User className="w-4 h-4" />
-                Sign In
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-}
