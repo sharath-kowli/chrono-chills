@@ -105,21 +105,15 @@ export default function DeleteAccount() {
             <Button variant="outline" onClick={() => navigate(-1)} disabled={loading}>
               Cancel
             </Button>
-            {session ? (
-              <Button
-                variant="destructive"
-                onClick={() => setConfirmOpen(true)}
-                disabled={loading}
-                className="gap-2"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Delete my account
-              </Button>
-            ) : (
-              <Button asChild variant="destructive" className="gap-2">
-                <Link to="/auth">Sign in to delete</Link>
-              </Button>
-            )}
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmOpen(true)}
+              disabled={loading || !session}
+              className="gap-2"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Delete my account
+            </Button>
           </div>
         </div>
       </main>
