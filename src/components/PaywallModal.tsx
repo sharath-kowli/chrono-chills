@@ -116,6 +116,43 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
     }
   };
 
+  const handleCredentialsUnlock = async () => {
+    if (credLoading) return;
+    const username = credUsername.trim();
+    const password = credPassword;
+    if (!username || !password) {
+      setCredError('Please enter both username and password.');
+      return;
+    }
+    setCredLoading(true);
+    setCredError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/auth';
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('unlock-with-credentials', {
+        body: { username, password },
+      });
+      if (error || !data?.success) {
+        setCredError(data?.error || 'Invalid credentials. Please try again.');
+        return;
+      }
+      await checkSubscription();
+      setCredUsername('');
+      setCredPassword('');
+      setShowCredentialsInput(false);
+      onUnlock?.();
+      onOpenChange(false);
+      window.location.href = '/payment-success';
+    } catch {
+      setCredError('Unable to unlock. Please try again.');
+    } finally {
+      setCredLoading(false);
+    }
+  };
+
   const handleClose = (isOpen: boolean) => {
     if (isCheckoutLoading) return; // prevent closing while loading
     if (!isOpen) {
@@ -123,6 +160,10 @@ export function PaywallModal({ open, onOpenChange, episodeTitle, onUnlock }: Pay
       setRedeemCode('');
       setRedeemError('');
       setCheckoutError(null);
+      setShowCredentialsInput(false);
+      setCredUsername('');
+      setCredPassword('');
+      setCredError('');
     }
     onOpenChange(isOpen);
   };
