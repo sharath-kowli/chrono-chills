@@ -58,6 +58,7 @@ import episode36Thumb from '@/assets/episode-36.jpg';
 import episode37Thumb from '@/assets/episode-37.jpg';
 import episode38Thumb from '@/assets/episode-38.jpg';
 import episode39Thumb from '@/assets/episode-39.jpg';
+import episode40Thumb from '@/assets/episode-40.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -443,6 +444,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode39Thumb,
       streamId: '43724ba340810142b35b8397c853fee6',
+      isLocked: true,
+    },
+    {
+      id: 'ep-40',
+      number: 40,
+      title: 'Paradise Lost',
+      subtitle: 'The group finds the world claimed by darkness.',
+      duration: '0:30',
+      thumbnail: episode40Thumb,
+      streamId: '7cea94c6976f30a64a4e0631cc0f1fb5',
       isNew: true,
       isLocked: true,
     },
