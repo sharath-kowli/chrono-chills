@@ -59,6 +59,7 @@ import episode37Thumb from '@/assets/episode-37.jpg';
 import episode38Thumb from '@/assets/episode-38.jpg';
 import episode39Thumb from '@/assets/episode-39.jpg';
 import episode40Thumb from '@/assets/episode-40.jpg';
+import episode41Thumb from '@/assets/episode-41.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -454,6 +455,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode40Thumb,
       streamId: '7cea94c6976f30a64a4e0631cc0f1fb5',
+      isLocked: true,
+    },
+    {
+      id: 'ep-41',
+      number: 41,
+      title: "No Man's Land",
+      subtitle: 'Hope for other survivors is dimming.',
+      duration: '0:30',
+      thumbnail: episode41Thumb,
+      streamId: '962df79f69592400d84417968eabc051',
       isNew: true,
       isLocked: true,
     },
