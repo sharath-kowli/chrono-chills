@@ -57,6 +57,9 @@ import episode35Thumb from '@/assets/episode-35.jpg';
 import episode36Thumb from '@/assets/episode-36.jpg';
 import episode37Thumb from '@/assets/episode-37.jpg';
 import episode38Thumb from '@/assets/episode-38.jpg';
+import episode39Thumb from '@/assets/episode-39.jpg';
+import episode40Thumb from '@/assets/episode-40.jpg';
+import episode41Thumb from '@/assets/episode-41.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -432,6 +435,36 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode38Thumb,
       streamId: 'd6d1d7cf2def153367f41aa04ffc7193',
+      isLocked: true,
+    },
+    {
+      id: 'ep-39',
+      number: 39,
+      title: 'Voice of the Legion',
+      subtitle: 'Terrifying visions blur with reality.',
+      duration: '0:30',
+      thumbnail: episode39Thumb,
+      streamId: '43724ba340810142b35b8397c853fee6',
+      isLocked: true,
+    },
+    {
+      id: 'ep-40',
+      number: 40,
+      title: 'Paradise Lost',
+      subtitle: 'The group finds the world claimed by darkness.',
+      duration: '0:30',
+      thumbnail: episode40Thumb,
+      streamId: '7cea94c6976f30a64a4e0631cc0f1fb5',
+      isLocked: true,
+    },
+    {
+      id: 'ep-41',
+      number: 41,
+      title: "No Man's Land",
+      subtitle: 'Hope for other survivors is dimming.',
+      duration: '0:30',
+      thumbnail: episode41Thumb,
+      streamId: '962df79f69592400d84417968eabc051',
       isNew: true,
       isLocked: true,
     },
