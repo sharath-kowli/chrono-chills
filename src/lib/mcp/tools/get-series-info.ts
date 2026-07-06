@@ -1,6 +1,6 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { series } from "@/data/episodes";
+import { series } from "../../data/episodes";
 
 export default defineTool({
   name: "get_series_info",
