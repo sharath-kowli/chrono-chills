@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "chrono-chills-mcp",
+      "version": "0.1.0",
+      "title": "Chrono Chills MCP"
+    },
+    "tools": [
+      {
+        "name": "list_episodes",
+        "title": "List episodes",
+        "description": "List every episode of the Chrono Chills series STILL HERE, including number, title, subtitle, duration, and premium-lock status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "premiumOnly": {
+              "description": "If true, return only premium-locked episodes.",
+              "type": "boolean"
+            },
+            "freeOnly": {
+              "description": "If true, return only free (non-locked) episodes.",
+              "type": "boolean"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_episode",
+        "title": "Get episode details",
+        "description": "Get full details for a single Chrono Chills episode by episode id (e.g. 'ep-12') or by episode number.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Episode id such as 'ep-0' or 'ep-42'.",
+              "type": "string"
+            },
+            "number": {
+              "description": "Episode number, e.g. 12.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_series_info",
+        "title": "Get series info",
+        "description": "Return metadata about the Chrono Chills horror series STILL HERE: title, tagline, total episode count, free vs premium counts, and pricing.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
