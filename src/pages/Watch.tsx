@@ -33,6 +33,12 @@ const Watch = () => {
   const { data: isBookmarked } = useIsBookmarked(episodeId || "");
   const { mutate: toggleBookmark } = useToggleBookmark();
 
+  // Keep latest progress in a ref so the player-init effect doesn't re-run on every save
+  const progressRef = useRef(progress);
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
   }, []);
@@ -87,37 +93,42 @@ const Watch = () => {
   useEffect(() => {
     if (!sdkReady || !episode || !iframeRef.current) return;
 
+    let player: any = null;
+    const handlePlay = () => setPaused(false);
+    const handlePause = () => setPaused(true);
+    const handleEnded = () => {
+      pushEvent("episode_completed", {
+        episode_id: episode.id,
+        episode_number: episode.number,
+        episode_title: episode.title,
+      });
+      updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+      const advance = () => {
+        if (nextEpisode) goToNextEpisode();
+      };
+      if (document.fullscreenElement) {
+        document.exitFullscreen().then(advance).catch(advance);
+      } else {
+        advance();
+      }
+    };
+
     const timeout = setTimeout(() => {
       try {
         const Stream = (window as any).Stream;
         if (!Stream || !iframeRef.current) return;
 
-        const player = Stream(iframeRef.current);
+        player = Stream(iframeRef.current);
         playerRef.current = player;
 
-        if (progress?.timestamp && !progress?.completed) {
-          player.currentTime = Math.max(0, progress.timestamp - 1);
+        const initial = progressRef.current;
+        if (initial?.timestamp && !initial?.completed) {
+          player.currentTime = Math.max(0, initial.timestamp - 1);
         }
 
-        player.addEventListener("play", () => setPaused(false));
-        player.addEventListener("pause", () => setPaused(true));
-
-        player.addEventListener("ended", () => {
-          pushEvent("episode_completed", {
-            episode_id: episode.id,
-            episode_number: episode.number,
-            episode_title: episode.title,
-          });
-          updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
-          const advance = () => {
-            if (nextEpisode) goToNextEpisode();
-          };
-          if (document.fullscreenElement) {
-            document.exitFullscreen().then(advance).catch(advance);
-          } else {
-            advance();
-          }
-        });
+        player.addEventListener("play", handlePlay);
+        player.addEventListener("pause", handlePause);
+        player.addEventListener("ended", handleEnded);
 
         if (progressSaveRef.current) clearInterval(progressSaveRef.current);
         progressSaveRef.current = setInterval(() => {
@@ -136,9 +147,18 @@ const Watch = () => {
         clearInterval(progressSaveRef.current);
         progressSaveRef.current = null;
       }
+      if (player) {
+        try {
+          player.removeEventListener("play", handlePlay);
+          player.removeEventListener("pause", handlePause);
+          player.removeEventListener("ended", handleEnded);
+        } catch {
+          /* ignore */
+        }
+      }
       playerRef.current = null;
     };
-  }, [sdkReady, episode, episodeId, progress, nextEpisode, session, updateProgress, goToNextEpisode]);
+  }, [sdkReady, episode, episodeId, nextEpisode, session, updateProgress, goToNextEpisode]);
 
   // Reset state when episode changes
   useEffect(() => {
