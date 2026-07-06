@@ -33,6 +33,12 @@ const Watch = () => {
   const { data: isBookmarked } = useIsBookmarked(episodeId || "");
   const { mutate: toggleBookmark } = useToggleBookmark();
 
+  // Keep latest progress in a ref so the player-init effect doesn't re-run on every save
+  const progressRef = useRef(progress);
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
   }, []);
