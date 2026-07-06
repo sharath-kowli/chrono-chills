@@ -1,6 +1,6 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { series } from "../../data/episodes";
+import { seriesMeta } from "../episodes-data";
 
 export default defineTool({
   name: "get_episode",
@@ -19,7 +19,7 @@ export default defineTool({
         isError: true,
       };
     }
-    const ep = series.episodes.find(
+    const ep = seriesMeta.episodes.find(
       (e) => (id ? e.id === id : true) && (number !== undefined ? e.number === number : true),
     );
     if (!ep) {
@@ -37,7 +37,7 @@ export default defineTool({
       isLocked: !!ep.isLocked,
       isNew: !!ep.isNew,
       url: `https://chronochills.com/watch/${ep.id}`,
-      series: series.title,
+      series: seriesMeta.title,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(row, null, 2) }],

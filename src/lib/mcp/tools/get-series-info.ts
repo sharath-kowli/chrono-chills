@@ -1,6 +1,6 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { series } from "../../data/episodes";
+import { seriesMeta } from "../episodes-data";
 
 export default defineTool({
   name: "get_series_info",
@@ -10,12 +10,12 @@ export default defineTool({
   inputSchema: {} as Record<string, z.ZodTypeAny>,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: () => {
-    const total = series.episodes.length;
-    const free = series.episodes.filter((e) => !e.isLocked).length;
+    const total = seriesMeta.episodes.length;
+    const free = seriesMeta.episodes.filter((e) => !e.isLocked).length;
     const info = {
-      id: series.id,
-      title: series.title,
-      tagline: series.tagline,
+      id: seriesMeta.id,
+      title: seriesMeta.title,
+      tagline: seriesMeta.tagline,
       totalEpisodes: total,
       freeEpisodes: free,
       premiumEpisodes: total - free,

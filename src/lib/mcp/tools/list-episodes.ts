@@ -1,6 +1,6 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { series } from "../../data/episodes";
+import { seriesMeta } from "../episodes-data";
 
 export default defineTool({
   name: "list_episodes",
@@ -19,7 +19,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: ({ premiumOnly, freeOnly }) => {
-    let episodes = series.episodes;
+    let episodes = seriesMeta.episodes;
     if (premiumOnly) episodes = episodes.filter((e) => e.isLocked);
     if (freeOnly) episodes = episodes.filter((e) => !e.isLocked);
     const rows = episodes.map((e) => ({
@@ -34,7 +34,7 @@ export default defineTool({
     }));
     return {
       content: [{ type: "text", text: JSON.stringify(rows, null, 2) }],
-      structuredContent: { series: series.title, count: rows.length, episodes: rows },
+      structuredContent: { series: seriesMeta.title, count: rows.length, episodes: rows },
     };
   },
 });
