@@ -60,6 +60,7 @@ import episode38Thumb from '@/assets/episode-38.jpg';
 import episode39Thumb from '@/assets/episode-39.jpg';
 import episode40Thumb from '@/assets/episode-40.jpg';
 import episode41Thumb from '@/assets/episode-41.jpg';
+import episode42Thumb from '@/assets/episode-42.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -465,6 +466,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode41Thumb,
       streamId: '962df79f69592400d84417968eabc051',
+      isLocked: true,
+    },
+    {
+      id: 'ep-42',
+      number: 42,
+      title: 'Life After Death',
+      subtitle: 'The survivors learn more about the enemy.',
+      duration: '0:30',
+      thumbnail: episode42Thumb,
+      streamId: '4ec729b752837482459b36fc695857ae',
       isNew: true,
       isLocked: true,
     },
