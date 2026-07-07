@@ -39,8 +39,14 @@ const Watch = () => {
     progressRef.current = progress;
   }, [progress]);
 
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setSessionLoaded(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
   }, []);
 
   const currentIndex = series.episodes.findIndex((ep) => ep.id === episodeId);
