@@ -56,6 +56,15 @@ const Watch = () => {
 
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
   const isNextEpisodeLocked = isNextEpisodePremium && !subscribed;
+  const isNextRequiresSignIn = nextEpisode && nextEpisode.number >= 2 && nextEpisode.number <= 12 && !session && !subscribed;
+
+  // Redirect guests trying to watch episodes 2-12 to sign-in
+  useEffect(() => {
+    if (!sessionLoaded || !episode) return;
+    if (episode.number >= 2 && episode.number <= 12 && !session && !subscribed) {
+      navigate(`/auth?redirect=/watch/${episode.id}`, { replace: true });
+    }
+  }, [sessionLoaded, session, subscribed, episode, navigate]);
 
   const transitionTo = useCallback((path: string, direction: "up" | "down") => {
     setSlideClass(direction === "up" ? "reels-slide-up" : "reels-slide-down");
