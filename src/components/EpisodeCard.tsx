@@ -16,17 +16,28 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   const { subscribed } = useSubscription();
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: progress } = useEpisodeProgress(episode.id);
   const { data: isBookmarked } = useIsBookmarked(episode.id);
 
   const isPremiumEpisode = episode.number >= 13;
   const isLocked = isPremiumEpisode && !subscribed;
+  const requiresSignIn = episode.number >= 2 && episode.number <= 12 && !session && !subscribed;
 
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {
       e.preventDefault();
       setShowPaywall(true);
+    } else if (requiresSignIn) {
+      e.preventDefault();
+      navigate(`/auth?redirect=/watch/${episode.id}`);
     }
   };
 
