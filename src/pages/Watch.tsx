@@ -75,10 +75,12 @@ const Watch = () => {
     if (!nextEpisode) return;
     if (isNextEpisodeLocked) {
       setShowPaywall(true);
+    } else if (isNextRequiresSignIn) {
+      navigate(`/auth?redirect=/watch/${nextEpisode.id}`);
     } else {
       transitionTo(`/watch/${nextEpisode.id}`, "up");
     }
-  }, [nextEpisode, isNextEpisodeLocked, transitionTo]);
+  }, [nextEpisode, isNextEpisodeLocked, isNextRequiresSignIn, transitionTo, navigate]);
 
   const goToPrevEpisode = useCallback(() => {
     if (!prevEpisode) {
