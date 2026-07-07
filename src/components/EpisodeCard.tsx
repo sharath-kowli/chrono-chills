@@ -1,10 +1,11 @@
 import { Play, Lock, Bookmark } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Episode } from "@/data/episodes";
 import { PaywallModal } from "./PaywallModal";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useIsBookmarked } from "@/hooks/useUserData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -15,17 +16,28 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   const { subscribed } = useSubscription();
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: progress } = useEpisodeProgress(episode.id);
   const { data: isBookmarked } = useIsBookmarked(episode.id);
 
   const isPremiumEpisode = episode.number >= 13;
   const isLocked = isPremiumEpisode && !subscribed;
+  const requiresSignIn = episode.number >= 2 && episode.number <= 12 && !session && !subscribed;
 
   const handleClick = (e: React.MouseEvent) => {
     if (isLocked) {
       e.preventDefault();
       setShowPaywall(true);
+    } else if (requiresSignIn) {
+      e.preventDefault();
+      navigate(`/auth?redirect=/watch/${episode.id}`);
     }
   };
 
@@ -53,7 +65,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
             </div>
           )}
 
-          {isLocked ? (
+          {isLocked || requiresSignIn ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
               <Lock className="h-6 w-6 text-primary" />
             </div>
@@ -78,7 +90,14 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
               </span>
             </div>
           )}
-          {episode.isNew && !isLocked && (
+          {requiresSignIn && !isLocked && (
+            <div className="absolute right-2 top-2 z-20">
+              <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
+                SIGN IN
+              </span>
+            </div>
+          )}
+          {episode.isNew && !isLocked && !requiresSignIn && (
             <div className="absolute right-2 top-2 z-20">
               <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
                 NEW

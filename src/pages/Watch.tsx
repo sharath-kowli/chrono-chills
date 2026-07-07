@@ -39,8 +39,14 @@ const Watch = () => {
     progressRef.current = progress;
   }, [progress]);
 
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setSessionLoaded(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
   }, []);
 
   const currentIndex = series.episodes.findIndex((ep) => ep.id === episodeId);
@@ -50,6 +56,15 @@ const Watch = () => {
 
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
   const isNextEpisodeLocked = isNextEpisodePremium && !subscribed;
+  const isNextRequiresSignIn = nextEpisode && nextEpisode.number >= 2 && nextEpisode.number <= 12 && !session && !subscribed;
+
+  // Redirect guests trying to watch episodes 2-12 to sign-in
+  useEffect(() => {
+    if (!sessionLoaded || !episode) return;
+    if (episode.number >= 2 && episode.number <= 12 && !session && !subscribed) {
+      navigate(`/auth?redirect=/watch/${episode.id}`, { replace: true });
+    }
+  }, [sessionLoaded, session, subscribed, episode, navigate]);
 
   const transitionTo = useCallback((path: string, direction: "up" | "down") => {
     setSlideClass(direction === "up" ? "reels-slide-up" : "reels-slide-down");
@@ -60,10 +75,12 @@ const Watch = () => {
     if (!nextEpisode) return;
     if (isNextEpisodeLocked) {
       setShowPaywall(true);
+    } else if (isNextRequiresSignIn) {
+      navigate(`/auth?redirect=/watch/${nextEpisode.id}`);
     } else {
       transitionTo(`/watch/${nextEpisode.id}`, "up");
     }
-  }, [nextEpisode, isNextEpisodeLocked, transitionTo]);
+  }, [nextEpisode, isNextEpisodeLocked, isNextRequiresSignIn, transitionTo, navigate]);
 
   const goToPrevEpisode = useCallback(() => {
     if (!prevEpisode) {
