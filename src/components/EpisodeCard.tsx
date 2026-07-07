@@ -1,10 +1,11 @@
 import { Play, Lock, Bookmark } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Episode } from "@/data/episodes";
 import { PaywallModal } from "./PaywallModal";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useIsBookmarked } from "@/hooks/useUserData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EpisodeCardProps {
   episode: Episode;
