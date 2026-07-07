@@ -65,7 +65,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
             </div>
           )}
 
-          {isLocked || requiresSignIn ? (
+          {isLocked ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
               <Lock className="h-6 w-6 text-primary" />
             </div>
@@ -90,14 +90,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
               </span>
             </div>
           )}
-          {requiresSignIn && !isLocked && (
-            <div className="absolute right-2 top-2 z-20">
-              <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
-                SIGN IN
-              </span>
-            </div>
-          )}
-          {episode.isNew && !isLocked && !requiresSignIn && (
+          {episode.isNew && !isLocked && (
             <div className="absolute right-2 top-2 z-20">
               <span className="rounded bg-primary px-1.5 py-0.5 font-display text-[10px] tracking-widest text-primary-foreground">
                 NEW
