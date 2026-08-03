@@ -62,6 +62,7 @@ import episode40Thumb from '@/assets/episode-40.jpg';
 import episode41Thumb from '@/assets/episode-41.jpg';
 import episode42Thumb from '@/assets/episode-42.jpg';
 import episode43Thumb from '@/assets/episode-43.jpg';
+import episode44Thumb from '@/assets/episode-44.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -482,10 +483,20 @@ export const series: Series = {
     {
       id: 'ep-43',
       number: 43,
+      title: 'Blind Fear',
+      subtitle: 'Fear takes hold when sight fails.',
+      duration: '0:30',
+      thumbnail: episode43Thumb,
+      streamId: '4ec729b752837482459b36fc695857ae',
+      isLocked: true,
+    },
+    {
+      id: 'ep-44',
+      number: 44,
       title: 'Bloodhound',
       subtitle: 'The pursuit results in a terrifying realization.',
       duration: '0:30',
-      thumbnail: episode43Thumb,
+      thumbnail: episode44Thumb,
       streamId: '43bfa2db8716bae99ba71caf4be4bf2d',
       isNew: true,
       isLocked: true,
