@@ -58,7 +58,7 @@ var seriesMeta = {
     { id: "ep-40", number: 40, title: "Paradise Lost", subtitle: "The group finds the world claimed by darkness.", duration: "0:30", isLocked: true },
     { id: "ep-41", number: 41, title: "No Man's Land", subtitle: "Hope for other survivors is dimming.", duration: "0:30", isLocked: true },
     { id: "ep-42", number: 42, title: "Life After Death", subtitle: "The survivors learn more about the enemy.", duration: "0:30", isLocked: true },
-    { id: "ep-44", number: 44, title: "Bloodhound", subtitle: "The pursuit results in a terrifying realization.", duration: "0:30", isLocked: true, isNew: true }
+    { id: "ep-43", number: 43, title: "Bloodhound", subtitle: "The pursuit results in a terrifying realization.", duration: "0:30", isLocked: true, isNew: true }
   ]
 };
 

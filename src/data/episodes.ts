@@ -61,7 +61,7 @@ import episode39Thumb from '@/assets/episode-39.jpg';
 import episode40Thumb from '@/assets/episode-40.jpg';
 import episode41Thumb from '@/assets/episode-41.jpg';
 import episode42Thumb from '@/assets/episode-42.jpg';
-import episode44Thumb from '@/assets/episode-44.jpg';
+import episode43Thumb from '@/assets/episode-43.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -480,12 +480,12 @@ export const series: Series = {
       isLocked: true,
     },
     {
-      id: 'ep-44',
-      number: 44,
+      id: 'ep-43',
+      number: 43,
       title: 'Bloodhound',
       subtitle: 'The pursuit results in a terrifying realization.',
       duration: '0:30',
-      thumbnail: episode44Thumb,
+      thumbnail: episode43Thumb,
       streamId: '43bfa2db8716bae99ba71caf4be4bf2d',
       isNew: true,
       isLocked: true,
