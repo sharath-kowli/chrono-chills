@@ -95,7 +95,7 @@ const Auth = () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, toast]);
+  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, nextPath, toast]);
 
   const handleGoogleSignIn = async () => {
     try {
