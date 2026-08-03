@@ -21,6 +21,7 @@ import Admin from "./pages/Admin";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Install from "./pages/Install";
 import DeleteAccount from "./pages/DeleteAccount";
+import OAuthConsent from "./pages/OAuthConsent";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
