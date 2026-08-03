@@ -20,6 +20,10 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNativeHandoffFlow = searchParams.get("native") === "1";
+  // Where to send the user after sign-in (e.g. back to an OAuth consent URL).
+  const rawNext = searchParams.get("next");
+  const nextPath =
+    rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
   // `handoff=1` is appended to the redirect_uri so we know the user has
   // just completed a fresh Google sign-in (vs. landing on the page with a
   // pre-existing/stale browser session).
@@ -40,6 +44,9 @@ const Auth = () => {
             refresh_token: session.refresh_token,
           });
         }
+      } else if (nextPath) {
+        // Return the user to where they came from (e.g. an OAuth consent URL).
+        window.location.replace(nextPath);
       } else {
         navigate("/");
       }
@@ -88,7 +95,7 @@ const Auth = () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, toast]);
+  }, [navigate, isNativeHandoffFlow, isPostOAuthReturn, nextPath, toast]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -115,7 +122,9 @@ const Auth = () => {
 
       // Web: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: nextPath
+          ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+          : window.location.origin,
       });
 
       if (error) {

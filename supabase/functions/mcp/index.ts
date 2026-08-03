@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/list-episodes.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
@@ -169,11 +169,16 @@ var get_series_info_default = defineTool3({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "jbimgporcbpjvgykgmal";
 var mcp_default = defineMcp({
   name: "chrono-chills-mcp",
   title: "Chrono Chills MCP",
   version: "0.1.0",
-  instructions: "Tools for the Chrono Chills horror short-form streaming app. Use `get_series_info` for series-level metadata, `list_episodes` to browse the STILL HERE episode catalog (with optional free/premium filters), and `get_episode` to look up a single episode by id or number. All data is public \u2014 no authentication required.",
+  instructions: "Tools for the Chrono Chills horror short-form streaming app. Use `get_series_info` for series-level metadata, `list_episodes` to browse the STILL HERE episode catalog (with optional free/premium filters), and `get_episode` to look up a single episode by id or number. Requires signing in to a Chrono Chills account.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [list_episodes_default, get_episode_default, get_series_info_default]
 });
 

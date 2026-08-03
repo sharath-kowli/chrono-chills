@@ -21,6 +21,7 @@ import Admin from "./pages/Admin";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Install from "./pages/Install";
 import DeleteAccount from "./pages/DeleteAccount";
+import OAuthConsent from "./pages/OAuthConsent";
 import { ProtectedRoute } from "./components/ui/ProtectedRoute";
 import { ConditionalProtectedRoute } from "./components/ui/ConditionalProtectedRoute";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/install" element={<Install />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
