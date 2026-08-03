@@ -1,13 +1,21 @@
-import { defineMcp } from "@lovable.dev/mcp-js";
+import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import listEpisodesTool from "./tools/list-episodes";
 import getEpisodeTool from "./tools/get-episode";
 import getSeriesInfoTool from "./tools/get-series-info";
+
+// The OAuth issuer must be the direct Supabase host, built from the project ref
+// (inlined at build time, so this stays import-safe).
+const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
   name: "chrono-chills-mcp",
   title: "Chrono Chills MCP",
   version: "0.1.0",
   instructions:
-    "Tools for the Chrono Chills horror short-form streaming app. Use `get_series_info` for series-level metadata, `list_episodes` to browse the STILL HERE episode catalog (with optional free/premium filters), and `get_episode` to look up a single episode by id or number. All data is public — no authentication required.",
+    "Tools for the Chrono Chills horror short-form streaming app. Use `get_series_info` for series-level metadata, `list_episodes` to browse the STILL HERE episode catalog (with optional free/premium filters), and `get_episode` to look up a single episode by id or number. Requires signing in to a Chrono Chills account.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated",
+  }),
   tools: [listEpisodesTool, getEpisodeTool, getSeriesInfoTool],
 });
