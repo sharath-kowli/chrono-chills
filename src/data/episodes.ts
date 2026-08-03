@@ -487,7 +487,7 @@ export const series: Series = {
       subtitle: 'Fear takes hold when sight fails.',
       duration: '0:30',
       thumbnail: episode43Thumb,
-      streamId: '4ec729b752837482459b36fc695857ae',
+      streamId: '43bfa2db8716bae99ba71caf4be4bf2d',
       isLocked: true,
     },
     {
@@ -497,7 +497,7 @@ export const series: Series = {
       subtitle: 'The pursuit results in a terrifying realization.',
       duration: '0:30',
       thumbnail: episode44Thumb,
-      streamId: '43bfa2db8716bae99ba71caf4be4bf2d',
+      streamId: 'c9395e95f2cc24446774a9e4cd7849ec',
       isNew: true,
       isLocked: true,
     },
