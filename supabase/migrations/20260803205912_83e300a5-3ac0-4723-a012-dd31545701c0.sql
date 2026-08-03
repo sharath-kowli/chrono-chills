@@ -1,0 +1,2 @@
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
+COMMENT ON FUNCTION public.has_role(uuid, public.app_role) IS 'Security definer role check. EXECUTE must be granted to authenticated because RLS policy expressions are evaluated with the invoker''s privileges.';
