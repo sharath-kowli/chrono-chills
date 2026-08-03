@@ -20,6 +20,10 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isNativeHandoffFlow = searchParams.get("native") === "1";
+  // Where to send the user after sign-in (e.g. back to an OAuth consent URL).
+  const rawNext = searchParams.get("next");
+  const nextPath =
+    rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
   // `handoff=1` is appended to the redirect_uri so we know the user has
   // just completed a fresh Google sign-in (vs. landing on the page with a
   // pre-existing/stale browser session).
