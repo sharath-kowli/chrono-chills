@@ -122,7 +122,9 @@ const Auth = () => {
 
       // Web: use the Lovable Cloud managed OAuth broker.
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: nextPath
+          ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+          : window.location.origin,
       });
 
       if (error) {
