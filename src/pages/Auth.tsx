@@ -44,6 +44,9 @@ const Auth = () => {
             refresh_token: session.refresh_token,
           });
         }
+      } else if (nextPath) {
+        // Return the user to where they came from (e.g. an OAuth consent URL).
+        window.location.replace(nextPath);
       } else {
         navigate("/");
       }
