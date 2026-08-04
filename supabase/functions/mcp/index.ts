@@ -59,7 +59,8 @@ var seriesMeta = {
     { id: "ep-41", number: 41, title: "No Man's Land", subtitle: "Hope for other survivors is dimming.", duration: "0:30", isLocked: true },
     { id: "ep-42", number: 42, title: "Life After Death", subtitle: "The survivors learn more about the enemy.", duration: "0:30", isLocked: true },
     { id: "ep-43", number: 43, title: "Blind Fear", subtitle: "Fear takes hold when sight fails.", duration: "0:30", isLocked: true },
-    { id: "ep-44", number: 44, title: "Bloodhound", subtitle: "The pursuit results in a terrifying realization.", duration: "0:30", isLocked: true, isNew: true }
+    { id: "ep-44", number: 44, title: "Bloodhound", subtitle: "The pursuit results in a terrifying realization.", duration: "0:30", isLocked: true },
+    { id: "ep-45", number: 45, title: "A Father's Job", subtitle: "A victory comes with a heavy cost.", duration: "0:30", isLocked: true, isNew: true }
   ]
 };
 

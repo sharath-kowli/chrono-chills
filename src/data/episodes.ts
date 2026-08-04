@@ -63,6 +63,7 @@ import episode41Thumb from '@/assets/episode-41.jpg';
 import episode42Thumb from '@/assets/episode-42.jpg';
 import episode43Thumb from '@/assets/episode-43.jpg';
 import episode44Thumb from '@/assets/episode-44.jpg';
+import episode45Thumb from '@/assets/episode-45.jpg';
 
 export const series: Series = {
   id: 'still-here-season-1',
@@ -498,6 +499,16 @@ export const series: Series = {
       duration: '0:30',
       thumbnail: episode44Thumb,
       streamId: '3b3b626b902c6e6d84b0c3434bb2c822',
+      isLocked: true,
+    },
+    {
+      id: 'ep-45',
+      number: 45,
+      title: "A Father's Job",
+      subtitle: 'A victory comes with a heavy cost.',
+      duration: '0:30',
+      thumbnail: episode45Thumb,
+      streamId: 'c9395e95f2cc24446774a9e4cd7849ec',
       isNew: true,
       isLocked: true,
     },
