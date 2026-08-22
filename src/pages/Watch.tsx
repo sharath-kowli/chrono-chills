@@ -24,6 +24,8 @@ const Watch = () => {
   const [session, setSession] = useState<any>(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [showPoster, setShowPoster] = useState(true);
+  const [playBlocked, setPlayBlocked] = useState(false);
   const [slideClass, setSlideClass] = useState<SlideDir>("");
   const progressSaveRef = useRef<NodeJS.Timeout | null>(null);
 
