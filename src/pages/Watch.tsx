@@ -337,7 +337,7 @@ const Watch = () => {
   }
 
   // controls=false hides Cloudflare's UI so our overlay owns interaction
-  const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=true&preload=auto&controls=false`;
+  const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=false&preload=auto&controls=false`;
   const thumbUrl = typeof episode.thumbnail === "string" ? episode.thumbnail : "";
   const seoTitle = `Watch STILL HERE Episode ${episode.number}: ${episode.title} — Chrono Chills`;
   const seoDesc = `${episode.subtitle} Episode ${episode.number} of the horror sci-fi series STILL HERE on Chrono Chills.`;
