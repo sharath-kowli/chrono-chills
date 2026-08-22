@@ -113,7 +113,11 @@ const Watch = () => {
     if (!sdkReady || !episode || !iframeRef.current) return;
 
     let player: any = null;
-    const handlePlay = () => setPaused(false);
+    const handlePlay = () => {
+      setPaused(false);
+      setPlayBlocked(false);
+      setShowPoster(false);
+    };
     const handlePause = () => setPaused(true);
     const handleEnded = () => {
       pushEvent("episode_completed", {
