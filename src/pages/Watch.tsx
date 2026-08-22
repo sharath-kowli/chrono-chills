@@ -273,6 +273,22 @@ const Watch = () => {
     });
   }, []);
 
+  // Poster play: player.play() MUST be the first statement — iOS consumes the user
+  // gesture on the first await, after which play() is rejected.
+  const handlePosterPlay = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) {
+      setPlayBlocked(true);
+      return;
+    }
+    const p = player.play();
+    if (p && typeof p.then === "function") {
+      p.catch(() => setPlayBlocked(true));
+    }
+    // Anything non-playback goes strictly after the play() call, fire-and-forget.
+    setPaused(false);
+  }, []);
+
   const skipBy = useCallback((seconds: number) => {
     const player = playerRef.current;
     if (!player) return;
