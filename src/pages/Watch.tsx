@@ -188,6 +188,8 @@ const Watch = () => {
     setShowPaywall(false);
     setSlideClass("");
     setPaused(false);
+    setShowPoster(true);
+    setPlayBlocked(false);
   }, [episodeId]);
 
   // Track episode view + milestone events
