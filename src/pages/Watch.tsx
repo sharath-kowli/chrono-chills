@@ -450,16 +450,45 @@ const Watch = () => {
         )}
 
 
-        {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI) */}
-        <button
-          type="button"
-          aria-label={paused ? "Resume" : "Pause"}
-          onClick={handleTapOverlay}
-          className="absolute inset-0 z-30 h-full w-full bg-transparent focus:outline-none"
-        />
+        {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI).
+            Disabled while the poster is up so the first tap always hits the real play button. */}
+        {!showPoster && (
+          <button
+            type="button"
+            aria-label={paused ? "Resume" : "Pause"}
+            onClick={handleTapOverlay}
+            className="absolute inset-0 z-30 h-full w-full bg-transparent focus:outline-none"
+          />
+        )}
+
+        {/* Poster overlay — shown until playback actually starts (required on iOS,
+            which blocks autoplay with audio). Dismissed by the player's `play` event. */}
+        {showPoster && (
+          <button
+            type="button"
+            onClick={handlePosterPlay}
+            aria-label={`Play episode ${episode.number}: ${episode.title}`}
+            className="absolute inset-0 z-[45] h-full w-full focus:outline-none"
+          >
+            <img
+              src={episode.thumbnail}
+              alt={`${episode.title} — STILL HERE Episode ${episode.number}`}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/60" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+              <span className="flex h-20 w-20 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm transition-transform duration-200 hover:scale-105">
+                <Play className="h-10 w-10 text-foreground" fill="currentColor" />
+              </span>
+              <span className="font-display text-xs tracking-widest text-foreground/80">
+                {playBlocked ? "TAP TO PLAY" : `EPISODE ${episode.number.toString().padStart(2, "0")}`}
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* Paused indicator */}
-        {paused && (
+        {paused && !showPoster && (
           <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm">
               <Play className="h-10 w-10 text-foreground" fill="currentColor" />
