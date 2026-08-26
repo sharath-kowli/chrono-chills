@@ -2,6 +2,17 @@ import { RefObject, useEffect, useState } from "react";
 import type HlsPlayer from "hls.js";
 import { hlsUrl, supportsNativeHls } from "@/lib/stream";
 
+/**
+ * Load errors tolerated before we give up and tell the viewer.
+ *
+ * hls.js reports most load failures as *non-fatal* and retries them on its own
+ * schedule, so counting only fatal errors lets a permanently dead stream (a bad id,
+ * a missing rendition, a CORS-blocked manifest) retry forever behind a poster that
+ * never changes. The budget only applies before playback starts — once media is
+ * flowing, a hiccup is hls.js's to recover from silently.
+ */
+const MAX_LOAD_ERRORS = 6;
+
 export type SourceStatus = "loading" | "ready" | "error";
 
 export interface HlsSource {
@@ -31,14 +42,32 @@ export function useHlsSource(videoRef: RefObject<HTMLVideoElement>, streamId?: s
     const url = hlsUrl(streamId);
     let cancelled = false;
     let hls: HlsPlayer | null = null;
+    let started = false;
+
+    const markStarted = () => {
+      started = true;
+    };
+    video.addEventListener("playing", markStarted);
+    const cleanup = () => {
+      video.removeEventListener("playing", markStarted);
+      video.removeEventListener("error", onNativeError);
+    };
+
+    // Native path: the element reports its own failures (404, CORS, undecodable).
+    function onNativeError() {
+      if (!cancelled) setSource({ status: "error" });
+    }
 
     setSource({ status: "loading" });
 
     if (supportsNativeHls(video)) {
+      video.addEventListener("error", onNativeError);
       video.src = url;
       video.load();
       setSource({ status: "ready", attachedStreamId: streamId });
       return () => {
+        cancelled = true;
+        cleanup();
         video.removeAttribute("src");
         video.load();
       };
@@ -48,18 +77,30 @@ export function useHlsSource(videoRef: RefObject<HTMLVideoElement>, streamId?: s
       .then(({ default: Hls }) => {
         if (cancelled) return;
         if (!Hls.isSupported()) {
+          video.addEventListener("error", onNativeError);
           video.src = url;
           video.load();
           setSource({ status: "ready", attachedStreamId: streamId });
           return;
         }
+
+        let budget = MAX_LOAD_ERRORS;
+        const giveUp = () => {
+          hls?.destroy();
+          hls = null;
+          setSource({ status: "error" });
+        };
+
         hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: 30 });
         hls.on(Hls.Events.ERROR, (_event, data) => {
-          if (!data.fatal || !hls) return;
-          // Fatal network/media errors are usually recoverable; anything else is terminal.
+          if (!hls || cancelled) return;
+          // Once media is flowing, only a fatal error is our business.
+          if (started && !data.fatal) return;
+          if (--budget <= 0) return giveUp();
+          if (!data.fatal) return; // hls.js retries non-fatal errors itself
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
           else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-          else setSource({ status: "error" });
+          else giveUp();
         });
         hls.loadSource(url);
         hls.attachMedia(video);
@@ -71,6 +112,7 @@ export function useHlsSource(videoRef: RefObject<HTMLVideoElement>, streamId?: s
 
     return () => {
       cancelled = true;
+      cleanup();
       hls?.destroy();
       hls = null;
     };
