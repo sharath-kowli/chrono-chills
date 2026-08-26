@@ -1,11 +1,13 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward, Play } from "lucide-react";
+import { ArrowLeft, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward, Play, Loader2 } from "lucide-react";
 import { series } from "@/data/episodes";
 import { SEO } from "@/components/SEO";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useEpisodeProgress, useUpdateWatchProgress, useIsBookmarked, useToggleBookmark } from "@/hooks/useUserData";
+import { useHlsSource } from "@/hooks/useHlsSource";
+import { hlsUrl } from "@/lib/stream";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useGeoTracking } from "@/hooks/useGeoTracking";
@@ -13,21 +15,36 @@ import { pushEvent } from "@/lib/gtm";
 
 type SlideDir = "" | "reels-slide-up" | "reels-slide-down" | "reels-rubber";
 
+// Module scope, not component state: it must survive episode navigation. Once the
+// viewer has started one episode by hand, iOS lets us start the rest for them.
+let hasUserStartedPlayback = false;
+
 const Watch = () => {
   const { subscribed } = useSubscription();
   const { episodeId } = useParams<{ episodeId: string }>();
   useGeoTracking(`/watch/${episodeId}`);
   const navigate = useNavigate();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [session, setSession] = useState<any>(null);
-  const [sdkReady, setSdkReady] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(true);
   const [showPoster, setShowPoster] = useState(true);
   const [playBlocked, setPlayBlocked] = useState(false);
+  const [buffering, setBuffering] = useState(false);
   const [slideClass, setSlideClass] = useState<SlideDir>("");
   const progressSaveRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingPlayRef = useRef(false);
+
+  const currentIndex = series.episodes.findIndex((ep) => ep.id === episodeId);
+  const episode = series.episodes[currentIndex];
+  const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
+  const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
+
+  // Attaches the HLS manifest to the <video> — natively on iOS/Safari, via hls.js elsewhere.
+  const { status: sourceStatus, attachedStreamId } = useHlsSource(videoRef, episode?.streamId);
+  // Guard on the attached id, not just the status: during an episode swap the old
+  // "ready" is still in this render's closure while the element has no source.
+  const sourceReady = sourceStatus === "ready" && attachedStreamId === episode?.streamId;
 
   // User Data Hooks
   const { data: progress } = useEpisodeProgress(episodeId || "");
@@ -35,11 +52,8 @@ const Watch = () => {
   const { data: isBookmarked } = useIsBookmarked(episodeId || "");
   const { mutate: toggleBookmark } = useToggleBookmark();
 
-  // Keep latest progress in a ref so the player-init effect doesn't re-run on every save
+  // Keep latest progress in a ref so the resume handler doesn't re-run on every save
   const progressRef = useRef(progress);
-  useEffect(() => {
-    progressRef.current = progress;
-  }, [progress]);
 
   const [sessionLoaded, setSessionLoaded] = useState(false);
   useEffect(() => {
@@ -50,11 +64,6 @@ const Watch = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => subscription.unsubscribe();
   }, []);
-
-  const currentIndex = series.episodes.findIndex((ep) => ep.id === episodeId);
-  const episode = series.episodes[currentIndex];
-  const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
-  const nextEpisode = currentIndex < series.episodes.length - 1 ? series.episodes[currentIndex + 1] : null;
 
   const isNextEpisodePremium = nextEpisode && nextEpisode.number >= 13;
   const isNextEpisodeLocked = isNextEpisodePremium && !subscribed;
@@ -95,102 +104,126 @@ const Watch = () => {
     transitionTo(`/watch/${prevEpisode.id}`, "down");
   }, [prevEpisode, transitionTo]);
 
-  // Load Cloudflare Stream SDK
-  useEffect(() => {
-    if (document.getElementById("stream-sdk")) {
-      setSdkReady(true);
+  // Playback start. `video.play()` must be the first statement in a gesture handler —
+  // iOS grants permission to the synchronous part of the tap and nothing after it.
+  const startPlayback = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) {
+      pendingPlayRef.current = true;
       return;
     }
-    const script = document.createElement("script");
-    script.id = "stream-sdk";
-    script.src = "https://embed.videodelivery.net/embed/sdk.latest.js";
-    script.onload = () => setSdkReady(true);
-    document.head.appendChild(script);
+    const p = video.play();
+    hasUserStartedPlayback = true;
+    pendingPlayRef.current = false;
+    if (p && typeof p.then === "function") {
+      p.catch(() => {
+        // Usually just "no source yet" — the tap has still unlocked the element,
+        // so retry as soon as the manifest is attached.
+        pendingPlayRef.current = true;
+        setPlayBlocked(true);
+      });
+    }
   }, []);
 
-  // Initialize Stream player when SDK + iframe are ready
+  // Retry a tap that landed before the manifest was attached, and roll straight into
+  // the next episode once the viewer has started playback by hand at least once.
   useEffect(() => {
-    if (!sdkReady || !episode || !iframeRef.current) return;
+    if (!sourceReady) return;
+    if (!pendingPlayRef.current && !hasUserStartedPlayback) return;
+    const video = videoRef.current;
+    if (!video) return;
+    pendingPlayRef.current = false;
+    const p = video.play();
+    if (p && typeof p.then === "function") {
+      p.catch(() => setPlayBlocked(true));
+    }
+  }, [sourceReady, episodeId]);
 
-    let player: any = null;
-    const handlePlay = () => {
-      setPaused(false);
-      setPlayBlocked(false);
-      setShowPoster(false);
-    };
-    const handlePause = () => setPaused(true);
-    const handleEnded = () => {
-      pushEvent("episode_completed", {
-        episode_id: episode.id,
-        episode_number: episode.number,
-        episode_title: episode.title,
-      });
-      updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
-      const advance = () => {
-        if (nextEpisode) goToNextEpisode();
-      };
-      if (document.fullscreenElement) {
-        document.exitFullscreen().then(advance).catch(advance);
-      } else {
-        advance();
+  // Restore the saved position. The saved progress and the media's metadata arrive in
+  // either order, so this runs on both and seeks once, the first time both are in hand.
+  const resumedForRef = useRef<string | null>(null);
+  const resumeIfPossible = useCallback(() => {
+    const video = videoRef.current;
+    const initial = progressRef.current;
+    if (!video || !episodeId || resumedForRef.current === episodeId) return;
+    if (video.readyState < 1) return; // duration not known yet
+    if (!initial?.timestamp || initial.completed) return;
+    if (video.currentTime > 1) return; // already watching — don't yank them backwards
+    const target = Math.max(0, initial.timestamp - 1);
+    if (Number.isFinite(video.duration) && target >= video.duration - 1) return;
+    resumedForRef.current = episodeId;
+    video.currentTime = target;
+  }, [episodeId]);
+
+  useEffect(() => {
+    progressRef.current = progress;
+    resumeIfPossible();
+  }, [progress, resumeIfPossible]);
+
+  // Periodic progress save
+  useEffect(() => {
+    if (!episode || !session) return;
+    progressSaveRef.current = setInterval(() => {
+      const video = videoRef.current;
+      if (video && !video.paused && video.currentTime > 0) {
+        updateProgress({ episodeId: episode.id, timestamp: video.currentTime });
       }
-    };
-
-    const timeout = setTimeout(() => {
-      try {
-        const Stream = (window as any).Stream;
-        if (!Stream || !iframeRef.current) return;
-
-        player = Stream(iframeRef.current);
-        playerRef.current = player;
-
-        const initial = progressRef.current;
-        if (initial?.timestamp && !initial?.completed) {
-          player.currentTime = Math.max(0, initial.timestamp - 1);
-        }
-
-        player.addEventListener("play", handlePlay);
-        player.addEventListener("pause", handlePause);
-        player.addEventListener("ended", handleEnded);
-
-        if (progressSaveRef.current) clearInterval(progressSaveRef.current);
-        progressSaveRef.current = setInterval(() => {
-          if (player.currentTime > 0 && session) {
-            updateProgress({ episodeId: episode.id, timestamp: player.currentTime });
-          }
-        }, 10000);
-      } catch (e) {
-        console.error("Stream player init error:", e);
-      }
-    }, 500);
-
+    }, 10000);
     return () => {
-      clearTimeout(timeout);
       if (progressSaveRef.current) {
         clearInterval(progressSaveRef.current);
         progressSaveRef.current = null;
       }
-      if (player) {
-        try {
-          player.removeEventListener("play", handlePlay);
-          player.removeEventListener("pause", handlePause);
-          player.removeEventListener("ended", handleEnded);
-        } catch {
-          /* ignore */
-        }
-      }
-      playerRef.current = null;
     };
-  }, [sdkReady, episode, episodeId, nextEpisode, session, updateProgress, goToNextEpisode]);
+  }, [episode, session, updateProgress]);
+
+  const handleEnded = useCallback(() => {
+    if (!episode) return;
+    pushEvent("episode_completed", {
+      episode_id: episode.id,
+      episode_number: episode.number,
+      episode_title: episode.title,
+    });
+    updateProgress({ episodeId: episode.id, timestamp: 0, completed: true });
+    const advance = () => {
+      if (nextEpisode) goToNextEpisode();
+    };
+    // iOS reports fullscreen on the element, not the document.
+    const video = videoRef.current as
+      | (HTMLVideoElement & { webkitDisplayingFullscreen?: boolean; webkitExitFullscreen?: () => void })
+      | null;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().then(advance).catch(advance);
+    } else {
+      if (video?.webkitDisplayingFullscreen) video.webkitExitFullscreen?.();
+      advance();
+    }
+  }, [episode, nextEpisode, goToNextEpisode, updateProgress]);
 
   // Reset state when episode changes
   useEffect(() => {
     setShowPaywall(false);
     setSlideClass("");
-    setPaused(false);
+    setPaused(true);
     setShowPoster(true);
     setPlayBlocked(false);
+    setBuffering(false);
+    resumedForRef.current = null;
   }, [episodeId]);
+
+  // Warm the CDN for the adjacent episodes so a swipe starts instantly.
+  useEffect(() => {
+    const ids = [nextEpisode?.streamId, prevEpisode?.streamId].filter(Boolean) as string[];
+    if (!ids.length) return;
+    const timer = window.setTimeout(() => {
+      ids.forEach((id) => {
+        fetch(hlsUrl(id)).catch(() => {
+          /* best-effort warm-up */
+        });
+      });
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [nextEpisode?.streamId, prevEpisode?.streamId]);
 
   // Track episode view + milestone events
   useEffect(() => {
@@ -255,51 +288,22 @@ const Watch = () => {
   const DOUBLE_TAP_MS = 280;
 
   const togglePlayPause = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return;
-    // Local state is the source of truth — the SDK's async `paused` getter races with rapid taps.
-    setPaused((prev) => {
-      try {
-        if (prev) {
-          const p = player.play();
-          if (p && typeof p.then === "function") p.catch(() => {});
-        } else {
-          player.pause();
-        }
-      } catch {
-        /* ignore */
-      }
-      return !prev;
-    });
-  }, []);
-
-  // Poster play: player.play() MUST be the first statement — iOS consumes the user
-  // gesture on the first await, after which play() is rejected.
-  const handlePosterPlay = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) {
-      setPlayBlocked(true);
-      return;
+    const video = videoRef.current;
+    if (!video) return;
+    // The element is now in our own document, so `paused` is synchronous and truthful.
+    if (video.paused) {
+      const p = video.play();
+      if (p && typeof p.then === "function") p.catch(() => {});
+    } else {
+      video.pause();
     }
-    const p = player.play();
-    if (p && typeof p.then === "function") {
-      p.catch(() => setPlayBlocked(true));
-    }
-    // Anything non-playback goes strictly after the play() call, fire-and-forget.
-    setPaused(false);
   }, []);
 
   const skipBy = useCallback((seconds: number) => {
-    const player = playerRef.current;
-    if (!player) return;
-    try {
-      Promise.resolve(player.currentTime).then((current: number) => {
-        const next = Math.max(0, (current || 0) + seconds);
-        player.currentTime = next;
-      });
-    } catch {
-      /* ignore */
-    }
+    const video = videoRef.current;
+    if (!video) return;
+    const limit = Number.isFinite(video.duration) ? video.duration : Infinity;
+    video.currentTime = Math.max(0, Math.min(limit, video.currentTime + seconds));
   }, []);
 
   const handleTapOverlay = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -352,8 +356,6 @@ const Watch = () => {
     );
   }
 
-  // controls=false hides Cloudflare's UI so our overlay owns interaction
-  const streamSrc = `https://iframe.videodelivery.net/${episode.streamId}?autoplay=false&preload=auto&controls=false`;
   const thumbUrl = typeof episode.thumbnail === "string" ? episode.thumbnail : "";
   const seoTitle = `Watch STILL HERE Episode ${episode.number}: ${episode.title} — Chrono Chills`;
   const seoDesc = `${episode.subtitle} Episode ${episode.number} of the horror sci-fi series STILL HERE on Chrono Chills.`;
@@ -427,46 +429,34 @@ const Watch = () => {
         </div>
       </header>
 
-      {/* Full viewport video player */}
+      {/* Full viewport video player.
+          A real <video> in our own document, not the Cloudflare iframe: user activation
+          is never handed to a cross-origin child frame, so on iOS a tap on this page can
+          only start playback if the media element lives on this page too.
+          `playsInline` keeps it in the page instead of iOS's fullscreen takeover. */}
       <div className="vhs-lines relative h-full w-full bg-background">
-        <iframe
-          key={episodeId}
-          ref={iframeRef}
-          src={streamSrc}
-          className="h-full w-full pointer-events-none"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          style={{ border: "none" }}
+        <video
+          ref={videoRef}
+          poster={episode.thumbnail}
+          playsInline
+          webkit-playsinline="true"
+          preload="auto"
+          className="pointer-events-none h-full w-full object-contain"
+          onLoadedMetadata={resumeIfPossible}
+          onPlay={() => {
+            setPaused(false);
+            setPlayBlocked(false);
+          }}
+          onPlaying={() => {
+            setShowPoster(false);
+            setBuffering(false);
+          }}
+          onWaiting={() => setBuffering(true)}
+          onPause={() => setPaused(true)}
+          onEnded={handleEnded}
         />
 
-        {/* Hidden prefetch iframes — silently buffer adjacent episodes so swiping is instant.
-            They are 1x1, off-screen, muted, no autoplay. Cloudflare will fetch the manifest +
-            initial segments, which the next page load reuses from cache. */}
-        {nextEpisode && (
-          <iframe
-            key={`prefetch-next-${nextEpisode.id}`}
-            src={`https://iframe.videodelivery.net/${nextEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
-            tabIndex={-1}
-            aria-hidden="true"
-            title="prefetch-next"
-            className="pointer-events-none"
-            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
-          />
-        )}
-        {prevEpisode && (
-          <iframe
-            key={`prefetch-prev-${prevEpisode.id}`}
-            src={`https://iframe.videodelivery.net/${prevEpisode.streamId}?autoplay=false&preload=auto&muted=true&controls=false`}
-            tabIndex={-1}
-            aria-hidden="true"
-            title="prefetch-prev"
-            className="pointer-events-none"
-            style={{ position: "absolute", width: 1, height: 1, opacity: 0, left: -9999, top: -9999, border: "none" }}
-          />
-        )}
-
-
-        {/* Tap-to-pause / swipe gesture overlay (sits above iframe, below UI).
+        {/* Tap-to-pause / swipe gesture overlay (sits above the video, below UI).
             Disabled while the poster is up so the first tap always hits the real play button. */}
         {!showPoster && (
           <button
@@ -477,12 +467,12 @@ const Watch = () => {
           />
         )}
 
-        {/* Poster overlay — shown until playback actually starts (required on iOS,
-            which blocks autoplay with audio). Dismissed by the player's `play` event. */}
+        {/* Poster overlay — shown until playback actually starts. Its onClick is the
+            user gesture that unlocks the video element on iOS. */}
         {showPoster && (
           <button
             type="button"
-            onClick={handlePosterPlay}
+            onClick={startPlayback}
             aria-label={`Play episode ${episode.number}: ${episode.title}`}
             className="absolute inset-0 z-[45] h-full w-full focus:outline-none"
           >
@@ -494,17 +484,32 @@ const Watch = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/60" />
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
               <span className="flex h-20 w-20 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm transition-transform duration-200 hover:scale-105">
-                <Play className="h-10 w-10 text-foreground" fill="currentColor" />
+                {sourceStatus !== "error" && !sourceReady ? (
+                  <Loader2 className="h-9 w-9 animate-spin text-foreground" />
+                ) : (
+                  <Play className="h-10 w-10 text-foreground" fill="currentColor" />
+                )}
               </span>
               <span className="font-display text-xs tracking-widest text-foreground/80">
-                {playBlocked ? "TAP TO PLAY" : `EPISODE ${episode.number.toString().padStart(2, "0")}`}
+                {sourceStatus === "error"
+                  ? "PLAYBACK UNAVAILABLE"
+                  : playBlocked
+                    ? "TAP TO PLAY"
+                    : `EPISODE ${episode.number.toString().padStart(2, "0")}`}
               </span>
             </div>
           </button>
         )}
 
+        {/* Buffering indicator */}
+        {buffering && !showPoster && (
+          <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-foreground/80" />
+          </div>
+        )}
+
         {/* Paused indicator */}
-        {paused && !showPoster && (
+        {paused && !showPoster && !buffering && (
           <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm">
               <Play className="h-10 w-10 text-foreground" fill="currentColor" />
