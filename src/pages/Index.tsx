@@ -93,6 +93,22 @@ const Index = () => {
           .filter(Boolean) as typeof series.episodes)
       : [];
 
+  // Latest watched episode (history is sorted newest first); if finished, offer the next one
+  const allEpisodes = allSeries.flatMap((s) => s.episodes);
+  const lastWatched = session && watchHistory ? watchHistory.find((w) => allEpisodes.some((e) => e.id === w.episode_id)) : undefined;
+  let resumeEpisode: (typeof allEpisodes)[number] | undefined;
+  let resumeCompletedPrev = false;
+  if (lastWatched) {
+    const owner = allSeries.find((s) => s.episodes.some((e) => e.id === lastWatched.episode_id))!;
+    const idx = owner.episodes.findIndex((e) => e.id === lastWatched.episode_id);
+    if (lastWatched.completed && idx < owner.episodes.length - 1) {
+      resumeEpisode = owner.episodes[idx + 1];
+      resumeCompletedPrev = true;
+    } else {
+      resumeEpisode = owner.episodes[idx];
+    }
+  }
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -135,6 +151,33 @@ const Index = () => {
 
       {/* Episodes grid */}
       <section className="container px-4 pb-20 space-y-12 mt-12">
+        {resumeEpisode && (
+          <div>
+            <h2 className="mb-6 font-display text-2xl tracking-wide text-foreground">Continue Watching</h2>
+            <Link
+              to={`/watch/${resumeEpisode.id}`}
+              className="group flex max-w-xl items-center gap-4 overflow-hidden rounded-xl border border-border/40 bg-card/60 p-3 transition-colors hover:border-foreground/60"
+            >
+              <div className="relative h-32 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+                <img src={resumeEpisode.thumbnail} alt={resumeEpisode.title} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center bg-background/30">
+                  <Play className="h-7 w-7 fill-foreground text-foreground" />
+                </div>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-widest text-primary">{series.title}</p>
+                <p className="mt-1 font-display text-xl tracking-wide text-foreground">
+                  EP {resumeEpisode.number.toString().padStart(2, "0")} · {resumeEpisode.title}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">{resumeEpisode.subtitle}</p>
+                <span className="mt-3 inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-xs font-medium uppercase tracking-widest text-primary-foreground">
+                  <Play className="h-3 w-3 fill-current" /> {resumeCompletedPrev ? "Play next" : "Continue"}
+                </span>
+              </div>
+            </Link>
+          </div>
+        )}
+
         <div>
           <h2 className="mb-6 font-display text-2xl tracking-wide text-foreground">Series</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
