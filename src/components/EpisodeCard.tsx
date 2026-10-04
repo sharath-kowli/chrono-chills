@@ -10,9 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface EpisodeCardProps {
   episode: Episode;
   index: number;
+  fluid?: boolean;
 }
 
-export function EpisodeCard({ episode, index }: EpisodeCardProps) {
+export function EpisodeCard({ episode, index, fluid }: EpisodeCardProps) {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   const { subscribed } = useSubscription();
@@ -46,7 +47,7 @@ export function EpisodeCard({ episode, index }: EpisodeCardProps) {
       <Link
         to={`/watch/${episode.id}`}
         onClick={handleClick}
-        className="episode-card group block w-36 flex-shrink-0 snap-start sm:w-44"
+        className={`episode-card group block ${fluid ? "w-full" : "w-36 flex-shrink-0 snap-start sm:w-44"}`}
         style={{ animationDelay: `${index * 60}ms` }}
       >
         <div className="relative aspect-[9/16] overflow-hidden rounded-lg">

@@ -10,6 +10,7 @@ import { initGeoData } from "@/lib/gtm";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Watch from "./pages/Watch";
+import SeriesDetail from "./pages/SeriesDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
@@ -51,6 +52,7 @@ const App = () => {
           <PageViewTracker />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/series/:seriesId" element={<SeriesDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/watch/:episodeId" element={<ConditionalProtectedRoute><Watch /></ConditionalProtectedRoute>} />
             <Route path="/d9x7k2m-panel" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

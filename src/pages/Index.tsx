@@ -4,7 +4,8 @@ import { Header } from "@/components/Header";
 import { SEO } from "@/components/SEO";
 import { SeriesHero } from "@/components/SeriesHero";
 import { EpisodeCard } from "@/components/EpisodeCard";
-import { series, sergeantNapalm, allSeries } from "@/data/episodes";
+import { SeriesCover } from "@/components/SeriesCover";
+import { series, allSeries } from "@/data/episodes";
 import { useWatchHistory, useBookmarks } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { useGeoTracking } from "@/hooks/useGeoTracking";
@@ -134,43 +135,14 @@ const Index = () => {
 
       {/* Episodes grid */}
       <section className="container px-4 pb-20 space-y-12 mt-12">
-        {continueWatchingEpisodes.length > 0 && (
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="font-display text-2xl tracking-wide text-foreground">Continue Watching</h2>
-            </div>
-            <div className="relative group">
-              {canScrollCWLeft && (
-                <button
-                  onClick={() => scroll(continueWatchingRef, "left")}
-                  aria-label="Scroll Continue Watching left"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-              )}
-
-              <div
-                ref={continueWatchingRef}
-                className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4"
-              >
-                {continueWatchingEpisodes.map((episode, index) => (
-                  <EpisodeCard key={`cw_${episode.id}`} episode={episode} index={index} />
-                ))}
-              </div>
-
-              {canScrollCWRight && (
-                <button
-                  onClick={() => scroll(continueWatchingRef, "right")}
-                  aria-label="Scroll Continue Watching right"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+        <div>
+          <h2 className="mb-6 font-display text-2xl tracking-wide text-foreground">Series</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {allSeries.map((s) => (
+              <SeriesCover key={s.id} series={s} isStillHere={s.id === series.id} />
+            ))}
           </div>
-        )}
+        </div>
 
         {bookmarkedEpisodes.length > 0 && (
           <div>
@@ -210,63 +182,6 @@ const Index = () => {
           </div>
         )}
 
-        <div>
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-display text-2xl tracking-wide text-foreground">All Episodes</h2>
-            <span className="text-sm text-muted-foreground">{series.episodes.length} available</span>
-          </div>
-
-          <div className="relative group">
-            {canScrollLeft && (
-              <button
-                onClick={() => scroll(scrollRef, "left")}
-                aria-label="Scroll All Episodes left"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            )}
-
-            <div
-              ref={scrollRef}
-              className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4"
-            >
-              {series.episodes.map((episode, index) => (
-                <EpisodeCard key={episode.id} episode={episode} index={index} />
-              ))}
-            </div>
-
-            {canScrollRight && (
-              <button
-                onClick={() => scroll(scrollRef, "right")}
-                aria-label="Scroll All Episodes right"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground shadow-lg transition-opacity hover:bg-background"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-display text-2xl tracking-wide text-foreground">{sergeantNapalm.title}</h2>
-            <span className="text-sm text-muted-foreground">
-              {sergeantNapalm.episodes.length > 0 ? `${sergeantNapalm.episodes.length} available` : "Coming soon"}
-            </span>
-          </div>
-          {sergeantNapalm.episodes.length > 0 ? (
-            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4">
-              {sergeantNapalm.episodes.map((episode, index) => (
-                <EpisodeCard key={episode.id} episode={episode} index={index} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border/60 text-sm uppercase tracking-widest text-muted-foreground">
-              First episodes dropping soon
-            </div>
-          )}
-        </div>
       </section>
 
       {/* Footer */}
