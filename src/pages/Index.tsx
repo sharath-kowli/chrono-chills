@@ -129,7 +129,7 @@ const Index = () => {
       <h1 className="sr-only">Chrono Chills — short, serialized horror sci-fi fiction</h1>
 
       {/* Hero section */}
-      <SeriesHero series={series} />
+      <SeriesHero series={series} rotation={allSeries} />
 
 
       {/* Episodes grid */}
