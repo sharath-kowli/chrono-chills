@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { SEO } from "@/components/SEO";
 import { SeriesHero } from "@/components/SeriesHero";
 import { EpisodeCard } from "@/components/EpisodeCard";
-import { series } from "@/data/episodes";
+import { series, sergeantNapalm, allSeries } from "@/data/episodes";
 import { useWatchHistory, useBookmarks } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import { useGeoTracking } from "@/hooks/useGeoTracking";
@@ -129,7 +129,7 @@ const Index = () => {
       <h1 className="sr-only">Chrono Chills — short, serialized horror sci-fi fiction</h1>
 
       {/* Hero section */}
-      <SeriesHero series={series} />
+      <SeriesHero series={series} rotation={allSeries} />
 
 
       {/* Episodes grid */}
@@ -246,6 +246,26 @@ const Index = () => {
               </button>
             )}
           </div>
+        </div>
+
+        <div>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-2xl tracking-wide text-foreground">{sergeantNapalm.title}</h2>
+            <span className="text-sm text-muted-foreground">
+              {sergeantNapalm.episodes.length > 0 ? `${sergeantNapalm.episodes.length} available` : "Coming soon"}
+            </span>
+          </div>
+          {sergeantNapalm.episodes.length > 0 ? (
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4">
+              {sergeantNapalm.episodes.map((episode, index) => (
+                <EpisodeCard key={episode.id} episode={episode} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border/60 text-sm uppercase tracking-widest text-muted-foreground">
+              First episodes dropping soon
+            </div>
+          )}
         </div>
       </section>
 

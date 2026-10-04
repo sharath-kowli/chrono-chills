@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
+import { waitFor } from "@testing-library/dom";
 import { createRef } from "react";
 import { useHlsSource } from "./useHlsSource";
 
