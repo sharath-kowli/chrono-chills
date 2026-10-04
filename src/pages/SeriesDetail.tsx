@@ -92,9 +92,9 @@ const SeriesDetail = () => {
         <h2 className="mb-6 font-display text-2xl tracking-wide text-foreground border-b border-border/50 pb-3">
           Episodes
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:gap-4 [&>*]:w-full">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:gap-4">
           {eps.map((episode, index) => (
-            <EpisodeCard key={episode.id} episode={episode} index={index} />
+            <EpisodeCard key={episode.id} episode={episode} index={index} fluid />
           ))}
         </div>
       </section>
