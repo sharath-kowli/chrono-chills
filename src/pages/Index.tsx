@@ -247,6 +247,26 @@ const Index = () => {
             )}
           </div>
         </div>
+
+        <div>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-2xl tracking-wide text-foreground">{sergeantNapalm.title}</h2>
+            <span className="text-sm text-muted-foreground">
+              {sergeantNapalm.episodes.length > 0 ? `${sergeantNapalm.episodes.length} available` : "Coming soon"}
+            </span>
+          </div>
+          {sergeantNapalm.episodes.length > 0 ? (
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-4">
+              {sergeantNapalm.episodes.map((episode, index) => (
+                <EpisodeCard key={episode.id} episode={episode} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border/60 text-sm uppercase tracking-widest text-muted-foreground">
+              First episodes dropping soon
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Footer */}

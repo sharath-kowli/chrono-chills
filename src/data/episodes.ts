@@ -514,3 +514,14 @@ export const series: Series = {
     },
   ],
 };
+
+// Second series — episodes will be added as they're released.
+// Episode ids must be prefixed with 'sn-' so they never collide with STILL HERE ids.
+export const sergeantNapalm: Series = {
+  id: 'sergeant-napalm-season-1',
+  title: 'SERGEANT NAPALM',
+  tagline: 'Coming soon to Chrono Chills.',
+  episodes: [],
+};
+
+export const allSeries: Series[] = [series, sergeantNapalm];
