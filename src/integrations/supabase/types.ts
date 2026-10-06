@@ -74,6 +74,48 @@ export type Database = {
         }
         Relationships: []
       }
+      episodes: {
+        Row: {
+          created_at: string
+          duration: string
+          id: string
+          is_new: boolean
+          number: number
+          series_id: string
+          stream_id: string
+          subtitle: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: string
+          id: string
+          is_new?: boolean
+          number: number
+          series_id: string
+          stream_id: string
+          subtitle?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string
+          id?: string
+          is_new?: boolean
+          number?: number
+          series_id?: string
+          stream_id?: string
+          subtitle?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           country: string
