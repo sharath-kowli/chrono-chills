@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, BookmarkPlus, BookmarkMinus, SkipBack, SkipForward, Play, Loader2 } from "lucide-react";
-import { series } from "@/data/episodes";
+import { allSeries, series as stillHereSeries } from "@/data/episodes";
 import { SEO } from "@/components/SEO";
 import { PaywallModal } from "@/components/PaywallModal";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -35,6 +35,7 @@ const Watch = () => {
   const progressSaveRef = useRef<NodeJS.Timeout | null>(null);
   const pendingPlayRef = useRef(false);
 
+  const series = allSeries.find((s) => s.episodes.some((ep) => ep.id === episodeId)) ?? stillHereSeries;
   const currentIndex = series.episodes.findIndex((ep) => ep.id === episodeId);
   const episode = series.episodes[currentIndex];
   const prevEpisode = currentIndex > 0 ? series.episodes[currentIndex - 1] : null;
