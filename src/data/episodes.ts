@@ -520,7 +520,7 @@ export const series: Series = {
 export const sergeantNapalm: Series = {
   id: 'sergeant-napalm-season-1',
   title: 'SERGEANT NAPALM',
-  tagline: 'Coming soon to Chrono Chills.',
+  tagline: 'A new Chrono Chills original.',
   episodes: [],
 };
 
