@@ -1,0 +1,1 @@
+DELETE FROM public.episodes WHERE id = 'sn-ep-2';
